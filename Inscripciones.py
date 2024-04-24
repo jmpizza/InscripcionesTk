@@ -173,11 +173,11 @@ class Inscripciones_2:
     
 
 if __name__ == "__main__":
-    app = Inscripciones_2()
+    app = Inscripciones()
     app.run()
 
-    app.insert_query("Inscritos2", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
-    result = app.select_query("Inscritos1")
-    print("Valores de Inscritos1:")
+    app.insert_query("Inscritos", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
+    result = app.select_query("Inscritos")
+    print("Valores de Inscritos:")
     for fila in result:
         print(fila)
