@@ -232,26 +232,43 @@ class Inscripciones:
         delete = f'DELETE FROM {tabla} WHERE {condicion}'
         self.run_Query(delete)
         
+    # Función para verificar la validez de una fecha ingresada en un campo de texto de una interfaz gráfica.
     def date_Verification(self, event=''):
-        fecha = self.fecha.get()
+        # Recuperar la fecha del widget correspondiente.
+        fecha = self.fecha.get() 
+
+        # Si la fecha excede los 10 caracteres permitidos, mostrar error y recortarla.
         if len(fecha) > 10:
             messagebox.showerror('Error', 'La fecha debe tener 10 caracteres')
             fecha = fecha[:10]
+
+        # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
         if re.match(r'^([0-9]{2}|[0-9]{2}/[0-9]{2})$', fecha):
-            fecha+='/'
+            fecha += '/'
+
+        # Limpiar la fecha de cualquier carácter no numérico o barra.
         fecha = re.sub(r'[^0-9/]', '', fecha)
+
+        # Limpiar el campo de texto y reinsertar la fecha procesada.
         self.fecha.delete(0, tk.END)
         self.fecha.insert(0, fecha)
         
-        if len(fecha) == 10 and event=='Guardar':
+        # Si la fecha es exactamente 10 caracteres y el evento es 'Guardar', validar formato.
+        if len(fecha) == 10 and event == 'Guardar':
+            # Validar que el formato de la fecha sea dd/mm/aaaa.
             if not re.match(r'^\d{2}/\d{2}/\d{4}$', fecha):
                 messagebox.showerror('Error', 'La fecha debe tener el formato dd/mm/aaaa')
                 return None
+            # Descomponer la fecha en día, mes y año y convertirlos a enteros.
             day, month, year = map(int, fecha.split('/'))
+
+            # Intentar crear un objeto de fecha para verificar su validez.
             try:
                 date(year, month, day)
+                # Si la fecha es válida, devolver en formato aaaa-mm-dd.
                 return f'{year}-{month}-{day}'
             except ValueError:
+                # Si la fecha es inválida, mostrar error.
                 messagebox.showerror('Error', 'La fecha ingresada no es valida')
                 return None
                 
