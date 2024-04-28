@@ -198,7 +198,7 @@ if __name__ == "__main__":
     app = Inscripciones()
     app.run()
 
-    app.insert_query("Inscritos", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
+    #app.insert_query("Inscritos", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
     result = app.select_query("Inscritos")
     print("Valores de Inscritos:")
     for fila in result:
