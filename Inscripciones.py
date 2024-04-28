@@ -189,7 +189,7 @@ class Inscripciones:
                 
                 
 
-    def insert_query(self, tabla, filas, valores):
+    def insert_Query(self, tabla, filas, valores):
         insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(map(str, valores))})'
         self.run_Query(insert)
 
@@ -199,12 +199,12 @@ class Inscripciones:
         insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(['?' for _ in valores])})'
         self.run_Query(insert, valores)
     '''
-    def select_query(self, tabla):
+    def select_Query(self, tabla):
         select =  f'SELECT * FROM {tabla}'
         return self.run_Query(select)
       
     
-    def update_query(self, tabla, filas, valores, condicion=None):
+    def update_Query(self, tabla, filas, valores, condicion=None):
         set_clause = ', '.join([f'{fila} = "{valor}"' for fila, valor in zip(filas, valores)])
         update = f'UPDATE {tabla} SET {set_clause} '
         if condicion:
@@ -228,7 +228,7 @@ class Inscripciones:
             print(f'Error al actualizar: {e}')
             return False  # La actualización falló
     '''
-    def delete_query(self, tabla, condicion):
+    def delete_Query(self, tabla, condicion):
         delete = f'DELETE FROM {tabla} WHERE {condicion}'
         self.run_Query(delete)
         
@@ -239,7 +239,7 @@ class Inscripciones:
 
         # Si la fecha excede los 10 caracteres permitidos, mostrar error y recortarla.
         if len(fecha) > 10:
-            messagebox.showerror('Error', 'La fecha debe tener 10 caracteres')
+            messagebox.showerror('Error', 'La fecha debe tener maximo 10 caracteres')
             fecha = fecha[:10]
 
         # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
@@ -271,6 +271,11 @@ class Inscripciones:
                 # Si la fecha es inválida, mostrar error.
                 messagebox.showerror('Error', 'La fecha ingresada no es valida')
                 return None
+        #Si el evento es 'Guardar' pero la fecha tiene una longitud diferente de 10, mostrar error.
+        elif len(fecha) != 10 and event == 'Guardar':
+            messagebox.showerror('Error', 'La fecha debe tener al menos 10 caracteres')
+            return None
+
                 
 
 if __name__ == '__main__':
