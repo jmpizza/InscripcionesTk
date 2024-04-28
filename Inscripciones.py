@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 import sqlite3
 from datetime import date
 
-class Inscripciones_2:
+class Inscripciones:
     def __init__(self, master=None):
          # Ventana principal
         self.db_name = 'Inscripciones.db'    
@@ -144,10 +144,8 @@ class Inscripciones_2:
             result = cursor.execute(query, parametros)
             conn.commit()
             final = result.fetchall()
-            if not final:
-                print("No existe")
-            else:
-                return final
+            return final if final else None
+                
                 
 
     def insert_query(self, tabla, filas, valores):
@@ -197,11 +195,11 @@ class Inscripciones_2:
     
 
 if __name__ == "__main__":
-    app = Inscripciones_2()
+    app = Inscripciones()
     app.run()
 
-    app.insert_query("Inscritos1", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
-    result = app.select_query("Inscritos1")
-    print("Valores de Inscritos1:")
+    app.insert_query("Inscritos", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
+    result = app.select_query("Inscritos")
+    print("Valores de Inscritos:")
     for fila in result:
         print(fila)
