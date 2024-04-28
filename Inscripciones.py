@@ -5,7 +5,7 @@ import tkinter.ttk as ttk
 import sqlite3
 
 
-class Inscripciones_2:
+class Inscripciones:
     def __init__(self, master=None):
          # Ventana principal
         self.db_name = 'Inscripciones.db'    
@@ -237,5 +237,5 @@ class Inscripciones_2:
         self.run_Query(delete)
 
 if __name__ == '__main__':
-    app = Inscripciones_2()
+    app = Inscripciones()
     app.run()
