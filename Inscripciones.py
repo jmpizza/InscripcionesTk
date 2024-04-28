@@ -182,6 +182,59 @@ class Inscripciones_2:
 
     ''' A partir de este punto se deben incluir las funciones
      para el manejo de la base de datos '''
+     
+    def run_Query(self, query, parametros=()):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            result = cursor.execute(query, parametros)
+            conn.commit()
+            final = result.fetchall()
+        return final if final else None
+                
+                
+
+    def insert_query(self, tabla, filas, valores):
+        insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(map(str, valores))})'
+        self.run_Query(insert)
+
+    '''
+
+    def insert_query(self, tabla, filas, valores):
+        insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(['?' for _ in valores])})'
+        self.run_Query(insert, valores)
+    '''
+    def select_query(self, tabla):
+        select =  f'SELECT * FROM {tabla}'
+        return self.run_Query(select)
+      
+    
+    def update_query(self, tabla, filas, valores, condicion=None):
+        set_clause = ', '.join([f'{fila} = "{valor}"' for fila, valor in zip(filas, valores)])
+        update = f'UPDATE {tabla} SET {set_clause} '
+        if condicion:
+            update += f' WHERE {condicion}'
+        try:
+            self.run_Query(update)
+            return True  # La actualización se realizó con éxito
+        except Exception as e:
+            print(f'Error al actualizar: {e}')
+            return False  # La actualización falló
+    '''      
+    def update_query(self, tabla, filas, valores, condicion=None):
+        set_clause = ', '.join([f'{fila} = ?' for fila in filas])
+        update = f"UPDATE {tabla} SET {set_clause} "
+        if condicion:
+            update += f' WHERE {condicion}'
+        try:
+            self.run_Query(update, valores)
+            return True  # La actualización se realizó con éxito
+        except Exception as e:
+            print(f'Error al actualizar: {e}')
+            return False  # La actualización falló
+    '''
+    def delete_query(self, tabla, condicion):
+        delete = f'DELETE FROM {tabla} WHERE {condicion}'
+        self.run_Query(delete)
 
 if __name__ == '__main__':
     app = Inscripciones_2()
