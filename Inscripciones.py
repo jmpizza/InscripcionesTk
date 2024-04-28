@@ -138,21 +138,45 @@ class Inscripciones_2:
      para el manejo de la base de datos '''
 
 
-    def run_Query(self, query, parametros =()):
+    def run_Query(self, query, parametros=()):
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
             result = cursor.execute(query, parametros)
             conn.commit()
-        return result.fetchall()
-    
+            final = result.fetchall()
+            if not final:
+                print("No existe")
+            else:
+                return final
+                
+
+    def insert_query(self, tabla, filas, valores):
+        insert = f"INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(map(str, valores))})"
+        self.run_Query(insert)
+
+    '''
+
     def insert_query(self, tabla, filas, valores):
         insert = f"INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(['?' for _ in valores])})"
         self.run_Query(insert, valores)
-
+    '''
     def select_query(self, tabla):
         select =  f"SELECT * FROM {tabla}"
         return self.run_Query(select)
-
+      
+    
+    def update_query(self, tabla, filas, valores, condicion=None):
+        set_clause = ", ".join([f"{fila} = '{valor}'" for fila, valor in zip(filas, valores)])
+        update = f"UPDATE {tabla} SET {set_clause} "
+        if condicion:
+            update += f" WHERE {condicion}"
+        try:
+            self.run_Query(update)
+            return True  # La actualización se realizó con éxito
+        except Exception as e:
+            print(f"Error al actualizar: {e}")
+            return False  # La actualización falló
+    '''      
     def update_query(self, tabla, filas, valores, condicion=None):
         set_clause = ", ".join([f"{fila} = ?" for fila in filas])
         update = f"UPDATE {tabla} SET {set_clause} "
@@ -164,11 +188,11 @@ class Inscripciones_2:
         except Exception as e:
             print(f"Error al actualizar: {e}")
             return False  # La actualización falló
-
+    '''
     def delete_query(self, tabla, condicion):
         delete = f"DELETE FROM {tabla} WHERE {condicion}"
         self.run_Query(delete)
-    
+
 
     
 
@@ -176,7 +200,7 @@ if __name__ == "__main__":
     app = Inscripciones_2()
     app.run()
 
-    app.insert_query("Inscritos2", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
+    app.insert_query("Inscritos1", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
     result = app.select_query("Inscritos1")
     print("Valores de Inscritos1:")
     for fila in result:
