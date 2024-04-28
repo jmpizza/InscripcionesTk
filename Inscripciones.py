@@ -3,6 +3,9 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import sqlite3
+import re
+from tkinter import messagebox
+from datetime import date
 
 
 class Inscripciones:
@@ -36,7 +39,6 @@ class Inscripciones:
         
          #Label No. Inscripción
         self.lblNoInscripcion.place(anchor='nw', x=680, y=20)
-        
         #Combobox No_Inscripción
         self.num_Inscripcion = ttk.Combobox(self.frm_1, name='num_inscripcion')
         self.num_Inscripcion.place(anchor='nw', width=100, x=682, y=42)
@@ -45,17 +47,18 @@ class Inscripciones:
         self.lblFecha = ttk.Label(self.frm_1, name='lblfecha')
         self.lblFecha.configure(background='#f7f9fd', text='Fecha:')
         self.lblFecha.place(anchor='nw', x=630, y=80)
-        
         #Entry Fecha
         self.fecha = ttk.Entry(self.frm_1, name='fecha')
         self.fecha.configure(justify='center')
         self.fecha.place(anchor='nw', width=100, x=680, y=80)
+        self.fecha.bind('<KeyRelease>', self.date_Verification)
+        self.fecha.bind('<ButtonRelease-1>', self.date_Verification)
+        self.fecha.bind('<Button-1>', self.date_Verification)
         
         #Label Alumno
         self.lblIdAlumno = ttk.Label(self.frm_1, name='lblidalumno')
         self.lblIdAlumno.configure(background='#f7f9fd', text='Id Alumno:')
         self.lblIdAlumno.place(anchor='nw', x=20, y=80)
-        
         #Combobox Alumno
         self.cmbx_Id_Alumno = ttk.Combobox(self.frm_1, name='cmbx_id_alumno')
         self.cmbx_Id_Alumno.place(anchor='nw', width=112, x=100, y=80)
@@ -64,7 +67,6 @@ class Inscripciones:
         self.lblNombres = ttk.Label(self.frm_1, name='lblnombres')
         self.lblNombres.configure(text='Nombre(s):')
         self.lblNombres.place(anchor='nw', x=20, y=130)
-        
         #Entry Alumno
         self.nombres = ttk.Entry(self.frm_1, name='nombres')
         self.nombres.place(anchor='nw', width=200, x=100, y=130)
@@ -73,7 +75,6 @@ class Inscripciones:
         self.lblApellidos = ttk.Label(self.frm_1, name='lblapellidos')
         self.lblApellidos.configure(text='Apellido(s):')
         self.lblApellidos.place(anchor='nw', x=400, y=130)
-        
         #Entry Apellidos
         self.apellidos = ttk.Entry(self.frm_1, name='apellidos')
         self.apellidos.place(anchor='nw', width=200, x=485, y=130)
@@ -82,7 +83,6 @@ class Inscripciones:
         self.lblIdCurso = ttk.Label(self.frm_1, name='lblidcurso')
         self.lblIdCurso.configure(background='#f7f9fd',state='normal',text='Id Curso:')
         self.lblIdCurso.place(anchor='nw', x=20, y=185)
-        
         #Entry Curso
         self.id_Curso = ttk.Entry(self.frm_1, name='id_curso')
         self.id_Curso.configure(justify='left', width=166)
@@ -92,7 +92,6 @@ class Inscripciones:
         self.lblDscCurso = ttk.Label(self.frm_1, name='lbldsccurso')
         self.lblDscCurso.configure(background='#f7f9fd',state='normal',text='Curso:')
         self.lblDscCurso.place(anchor='nw', x=275, y=185)
-        
         #Entry de Descripción del Curso 
         self.descripc_Curso = ttk.Entry(self.frm_1, name='descripc_curso')
         self.descripc_Curso.configure(justify='left', width=166)
@@ -102,7 +101,6 @@ class Inscripciones:
         self.lblHorario = ttk.Label(self.frm_1, name='label3')
         self.lblHorario.configure(background='#f7f9fd',state='normal',text='Hora:')
         self.lblHorario.place(anchor='nw', x=635, y=185)
-        
         #Entry del Horario
         self.horario = ttk.Entry(self.frm_1, name='entry3')
         self.horario.configure(justify='left', width=166)
@@ -169,8 +167,6 @@ class Inscripciones:
         self.scroll_Y.configure(orient='vertical')
         self.scroll_Y.place(anchor='s', height=275, width=12, x=790, y=582)
         
-        self.apellidos.configure(state='disabled')
-        
         self.frm_1.pack(side='top')
         self.frm_1.pack_propagate(0)
 
@@ -235,6 +231,30 @@ class Inscripciones:
     def delete_query(self, tabla, condicion):
         delete = f'DELETE FROM {tabla} WHERE {condicion}'
         self.run_Query(delete)
+        
+    def date_Verification(self, event=''):
+        fecha = self.fecha.get()
+        if len(fecha) > 10:
+            messagebox.showerror('Error', 'La fecha debe tener 10 caracteres')
+            fecha = fecha[:10]
+        if re.match(r'^([0-9]{2}|[0-9]{2}/[0-9]{2})$', fecha):
+            fecha+='/'
+        fecha = re.sub(r'[^0-9/]', '', fecha)
+        self.fecha.delete(0, tk.END)
+        self.fecha.insert(0, fecha)
+        
+        if len(fecha) == 10 and event=='Guardar':
+            if not re.match(r'^\d{2}/\d{2}/\d{4}$', fecha):
+                messagebox.showerror('Error', 'La fecha debe tener el formato dd/mm/aaaa')
+                return None
+            day, month, year = map(int, fecha.split('/'))
+            try:
+                date(year, month, day)
+                return f'{year}-{month}-{day}'
+            except ValueError:
+                messagebox.showerror('Error', 'La fecha ingresada no es valida')
+                return None
+                
 
 if __name__ == '__main__':
     app = Inscripciones()
