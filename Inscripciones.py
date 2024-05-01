@@ -41,6 +41,7 @@ class Inscripciones:
         #Combobox Alumno
         self.cmbx_Id_Alumno = ttk.Combobox(self.frm_1, name="cmbx_id_alumno")
         self.cmbx_Id_Alumno.place(anchor="nw", width=112, x=100, y=80)
+        self.cmbx_Id_Alumno['values']= self.combo_input("Id_Alumno", "Alumnos")
         #Label Alumno
         self.lblNombres = ttk.Label(self.frm_1, name="lblnombres")
         self.lblNombres.configure(text='Nombre(s):')
@@ -191,15 +192,21 @@ class Inscripciones:
         delete = f"DELETE FROM {tabla} WHERE {condicion}"
         self.run_Query(delete)
 
-
+    def combo_input(self, fila, tabla):
+            query = f'SELECT {fila} FROM {tabla}'
+            db_rows = self.run_Query(query)
+            data=[]
+            for rows in db_rows:
+                data.append(rows[0])
+            return data
     
 
 if __name__ == "__main__":
     app = Inscripciones()
     app.run()
 
-    #app.insert_query("Inscritos", ('Id_Alumno', 'Fecha_Inscripcion', 'Codigo_Curso'),(237, date(2024, 1, 1), 2345) )
-    result = app.select_query("Inscritos")
+    #app.insert_query("Alumnos", ('Id_Alumno', 'Fecha_Ingreso', ),(238, date(2024, 1, 1) ))
+    result = app.select_query("Alumnos")
     print("Valores de Inscritos:")
     for fila in result:
         print(fila)
