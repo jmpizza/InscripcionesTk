@@ -11,7 +11,7 @@ from datetime import date
 class Inscripciones:
     def __init__(self, master=None):
          # Ventana principal
-        self.db_name = 'Inscripciones.db'    
+        self.db_name = 'db/Inscripciones.db'    
         self.win = tk.Tk(master)
         self.win.configure(background='#f7f9fd', height=600, width=800)
         self.win.geometry('800x600')
@@ -34,7 +34,7 @@ class Inscripciones:
         self.cmbStyle = ttk.Style()
         self.cmbStyle.configure('TCombobox', background='#ffffff',font=('Arial', 11, 'bold'))
         self.cmbStyle.map('TCombobox',
-                          foreground=[('disabled', '#000000'), ('!disabled', '#f7f9fd')], 
+                          foreground=[('disabled', '#000000'), ('!disabled', '#000000')], 
                           fieldbackground=[('disabled', '#ffffff'), ('!disabled', '#ffffff')])
         
          #Label No. Inscripción
@@ -62,8 +62,9 @@ class Inscripciones:
         #Combobox Alumno
         self.cmbx_Id_Alumno = ttk.Combobox(self.frm_1, name='cmbx_id_alumno')
         self.cmbx_Id_Alumno.place(anchor='nw', width=112, x=100, y=80)
+        self.cmbx_Id_Alumno.bind('<KeyRelease>', self.id_Update)
+        self.cmbx_Id_Alumno.bind('<Button-1>', self.id_Update)
         self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Nombre)
-        self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Apellido)
         
         #Label Alumno
         self.lblNombres = ttk.Label(self.frm_1, name='lblnombres')
@@ -192,17 +193,11 @@ class Inscripciones:
         return final if final else None
                 
                 
-
     def insert_Query(self, tabla, filas, valores):
         insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(map(str, valores))})'
         self.run_Query(insert)
 
-    '''
 
-    def insert_query(self, tabla, filas, valores):
-        insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(['?' for _ in valores])})'
-        self.run_Query(insert, valores)
-    '''
     def select_Query(self, tabla):
         select =  f'SELECT * FROM {tabla}'
         return self.run_Query(select)
@@ -219,19 +214,7 @@ class Inscripciones:
         except Exception as e:
             print(f'Error al actualizar: {e}')
             return False  # La actualización falló
-    '''      
-    def update_query(self, tabla, filas, valores, condicion=None):
-        set_clause = ', '.join([f'{fila} = ?' for fila in filas])
-        update = f"UPDATE {tabla} SET {set_clause} "
-        if condicion:
-            update += f' WHERE {condicion}'
-        try:
-            self.run_Query(update, valores)
-            return True  # La actualización se realizó con éxito
-        except Exception as e:
-            print(f'Error al actualizar: {e}')
-            return False  # La actualización falló
-    '''
+
     def delete_Query(self, tabla, condicion):
         delete = f'DELETE FROM {tabla} WHERE {condicion}'
         self.run_Query(delete)
@@ -279,24 +262,35 @@ class Inscripciones:
         elif len(fecha) != 10 and event == 'Guardar':
             messagebox.showerror('Error', 'La fecha debe tener al menos 10 caracteres')
             return None
+        
+    def id_Update(self, _=''):
+        id = self.cmbx_Id_Alumno.get().strip()
+        id = f'%{id}%'
+        ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ?', (id,))
+        self.cmbx_Id_Alumno['values'] = ids
+        if ids and len(ids) == 1:
+            self.cmbx_Id_Alumno.set(ids[0][0])
+            self.rellenar_Nombre()
+            self.rellenar_Apellido()
 
     def rellenar_Nombre (self,tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
-        id = self.cmbx_Id_Alumno.get()
-        nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = '{id}'"
-        resultado = self.run_Query(nombre,(id,))
+        id = self.cmbx_Id_Alumno.get().strip()
+        nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
+        resultado = self.run_Query(nombre, (id,))
         self.nombres.config(state="enabled")
         self.nombres.delete(0,"end")
-        self.nombres.insert(0,resultado)
+        self.nombres.insert(0,resultado[0][0])
         self.nombres.config(state="disabled")
+        self.rellenar_Apellido()
         
     
-    def rellenar_Apellido (self,tabla='Alumnos',columna='Apellidos',celda='Id_Alumno'):
-        id = self.cmbx_Id_Alumno.get()
-        apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = '{id}'"
-        resultado = self.run_Query(apellido,(id,))
+    def rellenar_Apellido(self, tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
+        id = self.cmbx_Id_Alumno.get().strip()
+        apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
+        resultado = self.run_Query(apellido, (id,))
         self.apellidos.config(state="enabled")
-        self.apellidos.delete(0,"end")
-        self.apellidos.insert(0,resultado)
+        self.apellidos.delete(0, "end")
+        self.apellidos.insert(0, resultado[0][0])
         self.apellidos.config(state="disabled")
                   
 
