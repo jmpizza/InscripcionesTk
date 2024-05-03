@@ -62,6 +62,8 @@ class Inscripciones:
         #Combobox Alumno
         self.cmbx_Id_Alumno = ttk.Combobox(self.frm_1, name='cmbx_id_alumno')
         self.cmbx_Id_Alumno.place(anchor='nw', width=112, x=100, y=80)
+        self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Nombre)
+        self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Apellido)
         
         #Label Alumno
         self.lblNombres = ttk.Label(self.frm_1, name='lblnombres')
@@ -70,6 +72,7 @@ class Inscripciones:
         #Entry Alumno
         self.nombres = ttk.Entry(self.frm_1, name='nombres')
         self.nombres.place(anchor='nw', width=200, x=100, y=130)
+        self.nombres.config(state="disabled")
         
         #Label Apellidos
         self.lblApellidos = ttk.Label(self.frm_1, name='lblapellidos')
@@ -78,6 +81,7 @@ class Inscripciones:
         #Entry Apellidos
         self.apellidos = ttk.Entry(self.frm_1, name='apellidos')
         self.apellidos.place(anchor='nw', width=200, x=485, y=130)
+        self.apellidos.config(state="disabled")
         
         #Label Curso
         self.lblIdCurso = ttk.Label(self.frm_1, name='lblidcurso')
@@ -276,7 +280,25 @@ class Inscripciones:
             messagebox.showerror('Error', 'La fecha debe tener al menos 10 caracteres')
             return None
 
-                
+    def rellenar_Nombre (self,tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
+        id = self.cmbx_Id_Alumno.get()
+        nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = '{id}'"
+        resultado = self.run_Query(nombre,(id,))
+        self.nombres.config(state="enabled")
+        self.nombres.delete(0,"end")
+        self.nombres.insert(0,resultado)
+        self.nombres.config(state="disabled")
+        
+    
+    def rellenar_Apellido (self,tabla='Alumnos',columna='Apellidos',celda='Id_Alumno'):
+        id = self.cmbx_Id_Alumno.get()
+        apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = '{id}'"
+        resultado = self.run_Query(apellido,(id,))
+        self.apellidos.config(state="enabled")
+        self.apellidos.delete(0,"end")
+        self.apellidos.insert(0,resultado)
+        self.apellidos.config(state="disabled")
+                  
 
 if __name__ == '__main__':
     app = Inscripciones()
