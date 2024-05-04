@@ -83,15 +83,17 @@ class Inscripciones:
         self.apellidos = ttk.Entry(self.frm_1, name='apellidos')
         self.apellidos.place(anchor='nw', width=200, x=485, y=130)
         self.apellidos.config(state="disabled")
-        
+
         #Label Curso
         self.lblIdCurso = ttk.Label(self.frm_1, name='lblidcurso')
         self.lblIdCurso.configure(background='#f7f9fd',state='normal',text='Id Curso:')
         self.lblIdCurso.place(anchor='nw', x=20, y=185)
-        #Entry Curso
-        self.id_Curso = ttk.Entry(self.frm_1, name='id_curso')
-        self.id_Curso.configure(justify='left', width=166)
-        self.id_Curso.place(anchor='nw', width=166, x=100, y=185)
+        #Combobox Curso
+        self.cmbx_Id_Curso = ttk.Combobox(self.frm_1, name='cmbx_id_curso')
+        self.cmbx_Id_Curso.place(anchor='nw', width=166, x=100, y=185)
+        self.cmbx_Id_Curso.bind('<KeyRelease>', self.id_Update)
+        self.cmbx_Id_Curso.bind('<Button-1>', self.id_Update)
+        self.cmbx_Id_Curso.bind('<<ComboboxSelected>>', self.rellenar_Curso)
         
         #Label Descripción del Curso
         self.lblDscCurso = ttk.Label(self.frm_1, name='lbldsccurso')
@@ -194,7 +196,7 @@ class Inscripciones:
                 
                 
     def insert_Query(self, tabla, filas, valores):
-        insert = f'INSERT INTO {tabla} ({', '.join(filas)}) VALUES ({', '.join(map(str, valores))})'
+        insert = f'INSERT INTO {tabla} ({", ".join(filas)}) VALUES ({", ".join(map(str, valores))})'
         self.run_Query(insert)
 
 
@@ -264,6 +266,8 @@ class Inscripciones:
             return None
         
     def id_Update(self, _=''):
+        codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
+        self.cmbx_Id_Curso['values'] = codigos_cursos
         id = self.cmbx_Id_Alumno.get().strip()
         id = f'%{id}%'
         ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ?', (id,))
@@ -272,6 +276,23 @@ class Inscripciones:
             self.cmbx_Id_Alumno.set(ids[0][0])
             self.rellenar_Nombre()
             self.rellenar_Apellido()
+
+    def rellenar_Curso(self, event=None):
+        codigo_curso = self.cmbx_Id_Curso.get()
+        descripcion_curso = self.run_Query("SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if descripcion_curso:
+            self.descripc_Curso.config(state="enabled")
+            self.descripc_Curso.delete(0, "end")
+            self.descripc_Curso.insert(0, descripcion_curso[0][0])
+            self.descripc_Curso.config(state="disabled")
+        
+        # Obtener y mostrar el número de horas para el curso seleccionado
+        num_horas = self.run_Query("SELECT Num_Horas FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if num_horas:
+            self.horario.config(state="enabled")
+            self.horario.delete(0, "end")
+            self.horario.insert(0, num_horas[0][0])
+            self.horario.config(state="disabled")
 
     def rellenar_Nombre (self,tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
