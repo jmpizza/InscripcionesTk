@@ -91,8 +91,8 @@ class Inscripciones:
         #Combobox Curso
         self.cmbx_Id_Curso = ttk.Combobox(self.frm_1, name='cmbx_id_curso')
         self.cmbx_Id_Curso.place(anchor='nw', width=166, x=100, y=185)
-        self.cmbx_Id_Curso.bind('<KeyRelease>', self.id_Update)
-        self.cmbx_Id_Curso.bind('<Button-1>', self.id_Update)
+        self.cmbx_Id_Curso.bind('<KeyRelease>', self.combobox_curso_events)
+        self.cmbx_Id_Curso.bind('<Button-1>', self.combobox_curso_events)
         self.cmbx_Id_Curso.bind('<<ComboboxSelected>>', self.rellenar_Curso)
         
         #Label Descripción del Curso
@@ -277,23 +277,6 @@ class Inscripciones:
             self.rellenar_Nombre()
             self.rellenar_Apellido()
 
-    def rellenar_Curso(self, event=None):
-        codigo_curso = self.cmbx_Id_Curso.get()
-        descripcion_curso = self.run_Query("SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
-        if descripcion_curso:
-            self.descripc_Curso.config(state="enabled")
-            self.descripc_Curso.delete(0, "end")
-            self.descripc_Curso.insert(0, descripcion_curso[0][0])
-            self.descripc_Curso.config(state="disabled")
-        
-        # Obtener y mostrar el número de horas para el curso seleccionado
-        num_horas = self.run_Query("SELECT Num_Horas FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
-        if num_horas:
-            self.horario.config(state="enabled")
-            self.horario.delete(0, "end")
-            self.horario.insert(0, num_horas[0][0])
-            self.horario.config(state="disabled")
-
     def rellenar_Nombre (self,tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
         nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
@@ -314,6 +297,33 @@ class Inscripciones:
         self.apellidos.insert(0, resultado[0][0])
         self.apellidos.config(state="disabled")
                   
+    def combobox_curso_events(self, _=''):
+        codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
+        self.cmbx_Id_Curso['values'] = codigos_cursos
+        id = self.cmbx_Id_Curso.get().strip()
+        id = f'%{id}%'
+        ids = self.run_Query('SELECT Código_Curso FROM Cursos WHERE Código_Curso LIKE ?', (id,))
+        self.cmbx_Id_Curso['values'] = ids
+        if ids and len(ids) == 1:
+            self.cmbx_Id_Curso.set(ids[0][0])
+            self.rellenar_Curso()
+            
+    def rellenar_Curso(self, event=None):
+        codigo_curso = self.cmbx_Id_Curso.get()
+        descripcion_curso = self.run_Query("SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if descripcion_curso:
+            self.descripc_Curso.config(state="enabled")
+            self.descripc_Curso.delete(0, "end")
+            self.descripc_Curso.insert(0, descripcion_curso[0][0])
+            self.descripc_Curso.config(state="disabled")
+        
+        # Obtener y mostrar el número de horas para el curso seleccionado
+        num_horas = self.run_Query("SELECT Num_Horas FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if num_horas:
+            self.horario.config(state="enabled")
+            self.horario.delete(0, "end")
+            self.horario.insert(0, num_horas[0][0])
+            self.horario.config(state="disabled")
 
 if __name__ == '__main__':
     app = Inscripciones()
