@@ -232,8 +232,8 @@ class Inscripciones:
             fecha = fecha[:10]
 
         # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
-        if re.match(r'^([0-9]{2}|[0-9]{2}/[0-9]{2})$', fecha):
-            fecha += '/'
+        if re.match(r'^([0-9]{3}|[0-9]{2}/[0-9]{3})$', fecha):
+            fecha= re.sub(r'([0-9]{2})([0-9])', r'\1/\2', fecha)
 
         # Limpiar la fecha de cualquier carácter no numérico o barra.
         fecha = re.sub(r'[^0-9/]', '', fecha)
@@ -272,12 +272,12 @@ class Inscripciones:
         id = f'%{id}%'
         ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ?', (id,))
         self.cmbx_Id_Alumno['values'] = ids
-        if ids and len(ids) == 1:
+        if ids and len(ids) == 1 and len(ids[0] == 3):
             self.cmbx_Id_Alumno.set(ids[0][0])
             self.rellenar_Nombre()
             self.rellenar_Apellido()
 
-    def rellenar_Nombre (self,tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
+    def rellenar_Nombre (self, _='',tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
         nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
         resultado = self.run_Query(nombre, (id,))
@@ -288,7 +288,7 @@ class Inscripciones:
         self.rellenar_Apellido()
         
     
-    def rellenar_Apellido(self, tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
+    def rellenar_Apellido(self, _='', tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
         apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
         resultado = self.run_Query(apellido, (id,))
@@ -304,7 +304,7 @@ class Inscripciones:
         id = f'%{id}%'
         ids = self.run_Query('SELECT Código_Curso FROM Cursos WHERE Código_Curso LIKE ?', (id,))
         self.cmbx_Id_Curso['values'] = ids
-        if ids and len(ids) == 1:
+        if ids and len(ids) == 1 and len(ids[0]) == 7:
             self.cmbx_Id_Curso.set(ids[0][0])
             self.rellenar_Curso()
             
