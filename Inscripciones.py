@@ -130,6 +130,7 @@ class Inscripciones:
         self.btnGuardar = ttk.Button(self.frm_1, name='btnguardar')
         self.btnGuardar.configure(text='Guardar')
         self.btnGuardar.place(anchor='nw', x=250, y=260)
+        self.btnGuardar.bind('<Button-1>', self.guardar)
         
         #Botón Editar
         self.btnEditar = ttk.Button(self.frm_1, name='btneditar')
@@ -324,6 +325,33 @@ class Inscripciones:
             self.horario.delete(0, "end")
             self.horario.insert(0, num_horas[0][0])
             self.horario.config(state="disabled")
+    
+    def guardar(self, _=''):
+        fecha = self.date_Verification('Guardar')
+        if fecha is None:
+            return
+        fecha = "'" + fecha + "'" 
+        id_alumno = self.cmbx_Id_Alumno.get().strip()
+        codigo_curso = self.cmbx_Id_Curso.get()
+        horas = self.horario.get()
+        if not id_alumno or not codigo_curso:
+            messagebox.showerror('Error', 'Debe seleccionar un alumno y un curso')
+            return
+        self.insert_Query('Inscritos', ['Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'], [id_alumno, fecha,codigo_curso, horas])
+        #self.cargar_Inscripciones()
+        self.limpiar_Campos()
+        messagebox.showinfo('Información', 'Inscripción guardada con éxito')
+        
+    def limpiar_Campos(self):
+        self.cmbx_Id_Curso.set('')
+        self.fecha.delete(0, tk.END)
+        self.descripc_Curso.config(state="enabled")
+        self.descripc_Curso.delete(0, tk.END)
+        self.descripc_Curso.config(state="disabled")
+        self.horario.config(state="enabled")
+        self.horario.delete(0, tk.END)
+        self.horario.config(state="disabled")
+    
 
 if __name__ == '__main__':
     app = Inscripciones()
