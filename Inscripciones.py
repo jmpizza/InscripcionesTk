@@ -284,21 +284,23 @@ class Inscripciones:
         id = self.cmbx_Id_Alumno.get().strip()
         nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
         resultado = self.run_Query(nombre, (id,))
-        self.nombres.config(state="enabled")
-        self.nombres.delete(0,"end")
-        self.nombres.insert(0,resultado[0][0])
-        self.nombres.config(state="disabled")
-        self.rellenar_Apellido()
+        if resultado:
+            self.nombres.config(state="enabled")
+            self.nombres.delete(0,"end")
+            self.nombres.insert(0,resultado[0][0])
+            self.nombres.config(state="disabled")
+            self.rellenar_Apellido()
         
     
     def rellenar_Apellido(self, _='', tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
         apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
         resultado = self.run_Query(apellido, (id,))
-        self.apellidos.config(state="enabled")
-        self.apellidos.delete(0, "end")
-        self.apellidos.insert(0, resultado[0][0])
-        self.apellidos.config(state="disabled")
+        if resultado:
+            self.apellidos.config(state="enabled")
+            self.apellidos.delete(0, "end")
+            self.apellidos.insert(0, resultado[0][0])
+            self.apellidos.config(state="disabled")
                   
     def combobox_curso_events(self, _=''):
         codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
