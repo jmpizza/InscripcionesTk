@@ -339,7 +339,6 @@ class Inscripciones:
         if not no_inscripcion:
             self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
             no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")[0][0]
-            print(no_inscripcion)
         
         self.insert_Query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'], [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
         #self.cargar_Inscripciones()
