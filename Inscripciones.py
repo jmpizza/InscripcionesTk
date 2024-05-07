@@ -6,12 +6,14 @@ import sqlite3
 import re
 from tkinter import messagebox
 from datetime import date
+from pathlib import Path
 
+PATH = str((Path(__file__).resolve()).parent) + '/db/Inscripciones.db'
 
 class Inscripciones:
     def __init__(self, master=None):
          # Ventana principal
-        self.db_name = 'db/Inscripciones.db'    
+        self.db_name = PATH   
         self.win = tk.Tk(master)
         self.win.configure(background='#f7f9fd', height=600, width=800)
         self.win.geometry('800x600')
@@ -273,7 +275,7 @@ class Inscripciones:
         id = f'%{id}%'
         ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ?', (id,))
         self.cmbx_Id_Alumno['values'] = ids
-        if ids and len(ids) == 1 and len(ids[0] == 3):
+        if ids and len(ids) == 1 and len(self.cmbx_Id_Alumno.get().strip()) == 3:
             self.cmbx_Id_Alumno.set(ids[0][0])
             self.rellenar_Nombre()
             self.rellenar_Apellido()
@@ -305,7 +307,7 @@ class Inscripciones:
         id = f'%{id}%'
         ids = self.run_Query('SELECT Código_Curso FROM Cursos WHERE Código_Curso LIKE ?', (id,))
         self.cmbx_Id_Curso['values'] = ids
-        if ids and len(ids) == 1 and len(ids[0]) == 7:
+        if ids and len(ids) == 1 and len(self.cmbx_Id_Curso.get().strip()) == 7:
             self.cmbx_Id_Curso.set(ids[0][0])
             self.rellenar_Curso()
             
@@ -317,14 +319,6 @@ class Inscripciones:
             self.descripc_Curso.delete(0, "end")
             self.descripc_Curso.insert(0, descripcion_curso[0][0])
             self.descripc_Curso.config(state="disabled")
-        
-        # Obtener y mostrar el número de horas para el curso seleccionado
-        num_horas = self.run_Query("SELECT Num_Horas FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
-        if num_horas:
-            self.horario.config(state="enabled")
-            self.horario.delete(0, "end")
-            self.horario.insert(0, num_horas[0][0])
-            self.horario.config(state="disabled")
     
     def guardar(self, _=''):
         fecha = self.date_Verification('Guardar')
@@ -334,10 +328,18 @@ class Inscripciones:
         id_alumno = self.cmbx_Id_Alumno.get().strip()
         codigo_curso = self.cmbx_Id_Curso.get()
         horas = self.horario.get()
+        if not horas:
+            horas = '""'
         if not id_alumno or not codigo_curso:
             messagebox.showerror('Error', 'Debe seleccionar un alumno y un curso')
             return
-        self.insert_Query('Inscritos', ['Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'], [id_alumno, fecha,codigo_curso, horas])
+        no_inscripcion = self.run_Query("SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?", (id_alumno,))[0][0]
+        if not no_inscripcion:
+            self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
+            no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")[0][0]
+            print(no_inscripcion)
+        
+        self.insert_Query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'], [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
         #self.cargar_Inscripciones()
         self.limpiar_Campos()
         messagebox.showinfo('Información', 'Inscripción guardada con éxito')
