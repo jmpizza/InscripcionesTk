@@ -343,10 +343,11 @@ class Inscripciones:
         if not id_alumno or not codigo_curso:
             messagebox.showerror('Error', 'Debe seleccionar un alumno y un curso')
             return
-        no_inscripcion = self.run_Query("SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?", (id_alumno,))[0][0]
+        no_inscripcion = self.run_Query("SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?", (id_alumno,))
         if not no_inscripcion:
             self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
-            no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")[0][0]
+            no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")
+        no_inscripcion = no_inscripcion[0][0]
         if self.run_Query("SELECT Código_Curso FROM Inscritos WHERE No_Inscripción = ?", (no_inscripcion,)):
             messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
             self.limpiar_Campos()
