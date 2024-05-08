@@ -127,6 +127,7 @@ class Inscripciones:
         self.btnGuardar = ttk.Button(self.frm_1, name='btnbuscar')
         self.btnGuardar.configure(text='Buscar')
         self.btnGuardar.place(anchor='nw', x=150, y=260)
+        self.btnGuardar.bind('<Button-1>', self.mostrar_Busqueda)
         
         #Botón Guardar
         self.btnGuardar = ttk.Button(self.frm_1, name='btnguardar')
@@ -160,7 +161,7 @@ class Inscripciones:
         #Columnas del Treeview
         self.tView_cols = ['tV_alumno','tV_curso','tV_descripción','tV_horario']
         self.tView_dcols = ['tV_alumno','tV_curso','tV_descripción','tV_horario']
-        self.tView.configure(columns=self.tView_cols,displaycolumns=self.tView_dcols)
+        self.tView.configure(columns=self.tView_cols,displaycolumns=self.tView_dcols, show='headings')
         self.tView.column('tV_alumno',anchor='w',stretch=True,width=200,minwidth=50)
         self.tView.column('tV_curso',anchor='w',stretch=True,width=200,minwidth=50)
         self.tView.column('tV_descripción',anchor='w',stretch=True,width=200,minwidth=50)
@@ -359,6 +360,14 @@ class Inscripciones:
         self.horario.config(state="enabled")
         self.horario.delete(0, tk.END)
         self.horario.config(state="disabled")
+        
+    def mostrar_Busqueda(self, _=""):
+        consulta = self.run_Query("SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos")
+        if consulta : 
+            for i in consulta :
+                descripcion_Curso = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                resultado = self.run_Query(descripcion_Curso, (i[1],))
+                self.tView.insert("", "end", values=(i[0],i[1], resultado[0][0], i[2]))
     
 
 if __name__ == '__main__':
