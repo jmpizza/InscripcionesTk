@@ -158,15 +158,20 @@ class Inscripciones:
         self.tView.configure(selectmode='extended')
         
         #Columnas del Treeview
-        self.tView_cols = ['tV_descripción']
-        self.tView_dcols = ['tV_descripción']
+        self.tView_cols = ['tV_alumno','tV_curso','tV_descripción','tV_horario']
+        self.tView_dcols = ['tV_alumno','tV_curso','tV_descripción','tV_horario']
         self.tView.configure(columns=self.tView_cols,displaycolumns=self.tView_dcols)
-        self.tView.column('#0',anchor='w',stretch=True,width=10,minwidth=10)
+        self.tView.column('tV_alumno',anchor='w',stretch=True,width=200,minwidth=50)
+        self.tView.column('tV_curso',anchor='w',stretch=True,width=200,minwidth=50)
         self.tView.column('tV_descripción',anchor='w',stretch=True,width=200,minwidth=50)
+        self.tView.column('tV_horario',anchor='w',stretch=True,width=200,minwidth=50)
+        
         
         #Cabeceras
-        self.tView.heading('#0', anchor='w', text='Curso')
+        self.tView.heading('tV_alumno', anchor='w', text='Id_Alumno')
+        self.tView.heading('tV_curso', anchor='w', text='Id_Curso')
         self.tView.heading('tV_descripción', anchor='w', text='Descripción')
+        self.tView.heading('tV_horario', anchor='w', text='Hora')
         self.tView.place(anchor='nw', height=300, width=790, x=4, y=300)
         
         #Scrollbars
