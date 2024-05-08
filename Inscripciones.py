@@ -335,11 +335,11 @@ class Inscripciones:
         if fecha is None:
             return
         fecha = "'" + fecha + "'" 
-        id_alumno = self.cmbx_Id_Alumno.get().strip()
         codigo_curso = self.cmbx_Id_Curso.get()
         horas = self.horario.get()
         if not horas:
             horas = '""'
+        id_alumno = self.cmbx_Id_Alumno.get().strip()
         if not id_alumno or not codigo_curso:
             messagebox.showerror('Error', 'Debe seleccionar un alumno y un curso')
             return
@@ -347,8 +347,13 @@ class Inscripciones:
         if not no_inscripcion:
             self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
             no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")[0][0]
+        if self.run_Query("SELECT Código_Curso FROM Inscritos WHERE No_Inscripción = ?", (no_inscripcion,)):
+            messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
+            self.limpiar_Campos()
+            return
         
-        self.insert_Query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'], [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
+        self.insert_Query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'],
+                          [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
         #self.cargar_Inscripciones()
         self.limpiar_Campos()
         messagebox.showinfo('Información', 'Inscripción guardada con éxito')
