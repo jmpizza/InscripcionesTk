@@ -7,11 +7,13 @@ import re
 from tkinter import messagebox
 from datetime import date
 from pathlib import Path
+import signal
 
 PATH = str((Path(__file__).resolve()).parent) + '/db/Inscripciones.db'
 
 class Inscripciones:
     def __init__(self, master=None):
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
          # Ventana principal
         self.db_name = PATH   
         self.win = tk.Tk(master)
