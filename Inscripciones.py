@@ -370,13 +370,24 @@ class Inscripciones:
         self.horario.config(state="disabled")
         
     def mostrar_Busqueda(self, _=""):
-        consulta = self.run_Query("SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos")
-        if consulta : 
-            for i in consulta :
-                descripcion_Curso = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
-                resultado = self.run_Query(descripcion_Curso, (i[1],))
-                self.tView.insert("", "end", values=(i[0],i[1], resultado[0][0], i[2]))
-    
+        id = self.cmbx_Id_Alumno.get().strip()
+        N_Inscripcion = self.num_Inscripcion.get().strip()
+        if id :
+            consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
+            resultado = self.run_Query(consulta, (id,))
+            for i in resultado:
+                descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
+                self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
+            return 
+        elif N_Inscripcion :
+            consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE No_Inscripción = ?"
+            resultado = self.run_Query(consulta, (N_Inscripcion,))
+            for i in resultado:
+                descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
+                self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
+            return
 
 if __name__ == '__main__':
     app = Inscripciones()
