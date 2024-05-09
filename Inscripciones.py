@@ -388,6 +388,8 @@ class Inscripciones:
                 descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
                 self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
             return
+        else:
+            messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
 
 if __name__ == '__main__':
     app = Inscripciones()
