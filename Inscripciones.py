@@ -126,10 +126,10 @@ class Inscripciones:
                             background=[('!disabled', '#ffffff'), ('active', '#00ffff'), ('disabled', '#000000')])
         
         #Boton Buscar
-        self.btnGuardar = ttk.Button(self.frm_1, name='btnbuscar')
-        self.btnGuardar.configure(text='Buscar')
-        self.btnGuardar.place(anchor='nw', x=150, y=260)
-        self.btnGuardar.bind('<Button-1>', self.mostrar_Busqueda)
+        self.btnBuscar = ttk.Button(self.frm_1, name='btnbuscar')
+        self.btnBuscar.configure(text='Buscar')
+        self.btnBuscar.place(anchor='nw', x=150, y=260)
+        self.btnBuscar.bind('<Button-1>', self.mostrar_Busqueda)
         
         #Botón Guardar
         self.btnGuardar = ttk.Button(self.frm_1, name='btnguardar')
