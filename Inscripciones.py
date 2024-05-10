@@ -251,7 +251,7 @@ class Inscripciones:
 
         # Si la fecha excede los 10 caracteres permitidos, mostrar error y recortarla.
         if len(fecha) > 10:
-            messagebox.showinfo('Aviso', 'La fecha debe tener maximo 10 caracteres')
+            messagebox.showerror('Error', 'La fecha debe tener maximo 10 caracteres')
             fecha = fecha[:10]
 
         # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
@@ -269,7 +269,7 @@ class Inscripciones:
         if len(fecha) == 10 and event == 'Guardar':
             # Validar que el formato de la fecha sea dd/mm/aaaa.
             if not re.match(r'^\d{2}/\d{2}/\d{4}$', fecha):
-                messagebox.showinfo('Aviso', 'La fecha debe tener el formato dd/mm/aaaa')
+                messagebox.showerror('Error', 'La fecha debe tener el formato dd/mm/aaaa')
                 return None
             # Descomponer la fecha en día, mes y año y convertirlos a enteros.
             day, month, year = map(int, fecha.split('/'))
@@ -290,7 +290,7 @@ class Inscripciones:
         
     def id_Update(self, _=''):
         if str(self.cmbx_Id_Alumno['state']) == 'disabled':
-            messagebox.showerror('Error', 'No se puede modificar el Id_Alumno, para modificarlo presione el boton "Cancelar"')
+            messagebox.showinfo('Aviso', 'No se puede modificar el Id_Alumno, para modificarlo presione el boton "Cancelar"')
             return
         id = self.cmbx_Id_Alumno.get().strip()
         id = f'%{id}%'
@@ -305,7 +305,7 @@ class Inscripciones:
             
     def num_Inscripcion_Update(self, _=''):
         if str(self.num_Inscripcion['state']) == 'disabled':
-            messagebox.showerror('Error', 'No se puede modificar el No_Inscripción, para modificarlo presione el boton "Cancelar"')
+            messagebox.showinfo('Aviso', 'No se puede modificar el No_Inscripción, para modificarlo presione el boton "Cancelar"')
             return
         num_inscripcion = self.num_Inscripcion.get().strip()
         num_inscripcion = f'%{num_inscripcion}%'
