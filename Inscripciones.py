@@ -404,20 +404,28 @@ class Inscripciones:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
     def seleccion_Treeview(self, _=""):
         consulta = self.tView.selection()
-        resultados = self.tView.item(consulta[0], option = "values")
-        return resultados
+        if consulta:
+            resultados = self.tView.item(consulta[0], option = "values")
+            return resultados
+        else:
+            return None
     def editar(self, _=""):
         resultado = self.seleccion_Treeview()
-        if resultado:
+        if resultado is not None:
             self.cmbx_Id_Curso.delete(0,"end")
             self.cmbx_Id_Curso.insert(0,resultado[1])
             self.cmbx_Id_Alumno.delete(0,"end")
             self.cmbx_Id_Alumno.insert(0,resultado[0])
             self.rellenar_Apellido()
             self.rellenar_Nombre()
+            self.descripc_Curso.config(state="enabled")
+            self.descripc_Curso.delete(0,"end")
             self.rellenar_Curso()
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
+            messagebox.showinfo(title="Exito", message="El boton editar funciono")
+        else: 
+            messagebox.showinfo(title="Error", message="El boton editar no funciono")
 
 if __name__ == '__main__':
     app = Inscripciones()
