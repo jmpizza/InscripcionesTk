@@ -375,7 +375,7 @@ class Inscripciones:
         if id :
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
             resultado = self.run_Query(consulta, (id,))
-            if resultado == 'NoneType':
+            if resultado != 'NoneType':
                 for i in resultado:
                     descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
                     descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
@@ -386,7 +386,7 @@ class Inscripciones:
         elif N_Inscripcion :
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE No_Inscripción = ?"
             resultado = self.run_Query(consulta, (N_Inscripcion,))
-            if resultado == 'NoneType':
+            if resultado != 'NoneType':
                 for i in resultado:
                     descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
                     descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
