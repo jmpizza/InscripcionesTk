@@ -321,7 +321,6 @@ class Inscripciones:
         else:
             self.num_Inscripcion.config(state="enabled")
             self.num_Inscripcion.delete(0,"end")
-            self.num_Inscripcion.config(state="disabled")
         self.rellenar_Apellido()
         self.rellenar_Nombre()
     
@@ -333,7 +332,7 @@ class Inscripciones:
             self.cmbx_Id_Alumno.config(state="enabled")
             self.cmbx_Id_Alumno.delete(0,"end")
             self.cmbx_Id_Alumno.insert(0,resultado[0][0])
-            self.cmbx_Id_Alumno.config(state="disabled")
+            
         self.rellenar_Nombre()
         self.rellenar_Apellido()
     
