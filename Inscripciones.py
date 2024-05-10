@@ -81,6 +81,7 @@ class Inscripciones:
         self.nombres = ttk.Entry(self.frm_1, name='nombres')
         self.nombres.place(anchor='nw', width=200, x=100, y=130)
         self.nombres.config(state="disabled")
+        self.nombres.bind('<Button-1>', self.entry_Bloqueado)
         
         #Label Apellidos
         self.lblApellidos = ttk.Label(self.frm_1, name='lblapellidos')
@@ -90,6 +91,7 @@ class Inscripciones:
         self.apellidos = ttk.Entry(self.frm_1, name='apellidos')
         self.apellidos.place(anchor='nw', width=200, x=485, y=130)
         self.apellidos.config(state="disabled")
+        self.apellidos.bind('<Button-1>', self.entry_Bloqueado)
 
         #Label Curso
         self.lblIdCurso = ttk.Label(self.frm_1, name='lblidcurso')
@@ -110,6 +112,8 @@ class Inscripciones:
         self.descripc_Curso = ttk.Entry(self.frm_1, name='descripc_curso')
         self.descripc_Curso.configure(justify='left', width=166)
         self.descripc_Curso.place(anchor='nw', width=300, x=325, y=185)
+        self.descripc_Curso.config(state="disabled")
+        self.descripc_Curso.bind('<Button-1>', self.entry_Bloqueado)
         
         #Label Horario
         self.lblHorario = ttk.Label(self.frm_1, name='label3')
@@ -236,6 +240,10 @@ class Inscripciones:
         self.run_Query(delete)
         
 
+    def entry_Bloqueado(self, _=''):
+        messagebox.showinfo(title="Aviso", message="No se puede modificar este campo")
+
+
     # Función para verificar la validez de una fecha ingresada en un campo de texto de una interfaz gráfica.
     def date_Verification(self, event=''):
         # Recuperar la fecha del widget correspondiente.
@@ -243,7 +251,7 @@ class Inscripciones:
 
         # Si la fecha excede los 10 caracteres permitidos, mostrar error y recortarla.
         if len(fecha) > 10:
-            messagebox.showerror('Error', 'La fecha debe tener maximo 10 caracteres')
+            messagebox.showinfo('Aviso', 'La fecha debe tener maximo 10 caracteres')
             fecha = fecha[:10]
 
         # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
@@ -261,7 +269,7 @@ class Inscripciones:
         if len(fecha) == 10 and event == 'Guardar':
             # Validar que el formato de la fecha sea dd/mm/aaaa.
             if not re.match(r'^\d{2}/\d{2}/\d{4}$', fecha):
-                messagebox.showerror('Error', 'La fecha debe tener el formato dd/mm/aaaa')
+                messagebox.showinfo('Aviso', 'La fecha debe tener el formato dd/mm/aaaa')
                 return None
             # Descomponer la fecha en día, mes y año y convertirlos a enteros.
             day, month, year = map(int, fecha.split('/'))
