@@ -141,6 +141,8 @@ class Inscripciones:
         self.btnEditar = ttk.Button(self.frm_1, name='btneditar')
         self.btnEditar.configure(text='Editar')
         self.btnEditar.place(anchor='nw', x=350, y=260)
+        self.btnEditar.bind("<<TreeviewSelect>>", self.seleccion_Treeview)
+        self.btnEditar.bind('<Button-1>', self.editar)
         #Botón Eliminar
         self.btnEliminar = ttk.Button(self.frm_1, name='btneliminar')
         self.btnEliminar.configure(text='Eliminar')
@@ -400,6 +402,22 @@ class Inscripciones:
                 messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
         else:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
+    def seleccion_Treeview(self, _=""):
+        consulta = self.tView.selection()
+        resultados = self.tView.item(consulta[0], option = "values")
+        return resultados
+    def editar(self, _=""):
+        resultado = self.seleccion_Treeview()
+        if resultado:
+            self.cmbx_Id_Curso.delete(0,"end")
+            self.cmbx_Id_Curso.insert(0,resultado[1])
+            self.cmbx_Id_Alumno.delete(0,"end")
+            self.cmbx_Id_Alumno.insert(0,resultado[0])
+            self.rellenar_Apellido()
+            self.rellenar_Nombre()
+            self.rellenar_Curso()
+            self.horario.delete(0, "end")
+            self.horario.insert(0,resultado[3])
 
 if __name__ == '__main__':
     app = Inscripciones()
