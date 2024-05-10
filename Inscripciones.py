@@ -376,6 +376,8 @@ class Inscripciones:
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
             resultado = self.run_Query(consulta, (id,))
             if resultado is not None:
+                if len(self.tView.get_children()) > 0:
+                    self.tView.delete(*self.tView.get_children())
                 for i in resultado:
                     descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
                     descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
@@ -387,6 +389,8 @@ class Inscripciones:
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE No_Inscripción = ?"
             resultado = self.run_Query(consulta, (N_Inscripcion,))
             if resultado is not None:
+                if len(self.tView.get_children()) > 0:
+                    self.tView.delete(*self.tView.get_children())
                 for i in resultado:
                     descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
                     descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
