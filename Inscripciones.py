@@ -281,7 +281,7 @@ class Inscripciones:
             return None
         
     def id_Update(self, _=''):
-        if self.cmbx_Id_Alumno['state'] == 'disabled':
+        if str(self.cmbx_Id_Alumno['state']) == 'disabled':
             messagebox.showerror('Error', 'No se puede modificar el Id_Alumno, para modificarlo presione el boton "Cancelar"')
             return
         id = self.cmbx_Id_Alumno.get().strip()
@@ -296,7 +296,7 @@ class Inscripciones:
             self.num_Inscripcion.config(state="enabled")
             
     def num_Inscripcion_Update(self, _=''):
-        if self.num_Inscripcion['state'] == 'disabled':
+        if str(self.num_Inscripcion['state']) == 'disabled':
             messagebox.showerror('Error', 'No se puede modificar el No_Inscripción, para modificarlo presione el boton "Cancelar"')
             return
         num_inscripcion = self.num_Inscripcion.get().strip()
@@ -332,7 +332,7 @@ class Inscripciones:
             self.cmbx_Id_Alumno.config(state="enabled")
             self.cmbx_Id_Alumno.delete(0,"end")
             self.cmbx_Id_Alumno.insert(0,resultado[0][0])
-            
+            self.cmbx_Id_Alumno.config(state="disabled")
         self.rellenar_Nombre()
         self.rellenar_Apellido()
     
