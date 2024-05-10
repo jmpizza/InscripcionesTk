@@ -375,19 +375,25 @@ class Inscripciones:
         if id :
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
             resultado = self.run_Query(consulta, (id,))
-            for i in resultado:
-                descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
-                descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
-                self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
-            return 
+            if resultado == 'NoneType':
+                for i in resultado:
+                    descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                    descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
+                    self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
+                return
+            else:
+                messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
         elif N_Inscripcion :
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE No_Inscripción = ?"
             resultado = self.run_Query(consulta, (N_Inscripcion,))
-            for i in resultado:
-                descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
-                descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
-                self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
-            return
+            if resultado == 'NoneType':
+                for i in resultado:
+                    descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                    descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
+                    self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
+                return
+            else:
+                messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
         else:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
 
