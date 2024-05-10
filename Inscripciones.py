@@ -46,6 +46,9 @@ class Inscripciones:
         #Combobox No_Inscripción
         self.num_Inscripcion = ttk.Combobox(self.frm_1, name='num_inscripcion')
         self.num_Inscripcion.place(anchor='nw', width=100, x=682, y=42)
+        self.num_Inscripcion.bind('<KeyRelease>', self.num_Inscripcion_Update)
+        self.num_Inscripcion.bind('<Button-1>', self.num_Inscripcion_Update)
+        self.num_Inscripcion.bind('<<ComboboxSelected>>', self.rellenar_Id_Alumno)
         
         #Label Fecha
         self.lblFecha = ttk.Label(self.frm_1, name='lblfecha')
@@ -68,7 +71,7 @@ class Inscripciones:
         self.cmbx_Id_Alumno.place(anchor='nw', width=112, x=100, y=80)
         self.cmbx_Id_Alumno.bind('<KeyRelease>', self.id_Update)
         self.cmbx_Id_Alumno.bind('<Button-1>', self.id_Update)
-        self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Nombre)
+        self.cmbx_Id_Alumno.bind('<<ComboboxSelected>>', self.rellenar_Num_Inscripcion)
         
         #Label Alumno
         self.lblNombres = ttk.Label(self.frm_1, name='lblnombres')
@@ -196,9 +199,7 @@ class Inscripciones:
     def run(self):
         self.mainwindow.mainloop()
 
-    ''' A partir de este punto se deben incluir las funciones
-     para el manejo de la base de datos '''
-     
+    #Metodos para el manejo de la base de datos
     def run_Query(self, query, parametros=()):
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
@@ -234,6 +235,7 @@ class Inscripciones:
         delete = f'DELETE FROM {tabla} WHERE {condicion}'
         self.run_Query(delete)
         
+
     # Función para verificar la validez de una fecha ingresada en un campo de texto de una interfaz gráfica.
     def date_Verification(self, event=''):
         # Recuperar la fecha del widget correspondiente.
@@ -279,17 +281,62 @@ class Inscripciones:
             return None
         
     def id_Update(self, _=''):
-        codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
-        self.cmbx_Id_Curso['values'] = codigos_cursos
+        if self.cmbx_Id_Alumno['state'] == 'disabled':
+            messagebox.showerror('Error', 'No se puede modificar el Id_Alumno, para modificarlo presione el boton "Cancelar"')
+            return
         id = self.cmbx_Id_Alumno.get().strip()
         id = f'%{id}%'
-        ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ?', (id,))
+        ids = self.run_Query('SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno LIKE ? ORDER BY Id_Alumno ASC', (id,))
         self.cmbx_Id_Alumno['values'] = ids
-        if ids and len(ids) == 1 and len(self.cmbx_Id_Alumno.get().strip()) == 3:
+        if ids and len(ids) == 1 and len(self.cmbx_Id_Alumno.get().strip()) == len(ids[0][0]):
             self.cmbx_Id_Alumno.set(ids[0][0])
-            self.rellenar_Nombre()
-            self.rellenar_Apellido()
-
+            self.rellenar_Num_Inscripcion()
+            
+        else:
+            self.num_Inscripcion.config(state="enabled")
+            
+    def num_Inscripcion_Update(self, _=''):
+        if self.num_Inscripcion['state'] == 'disabled':
+            messagebox.showerror('Error', 'No se puede modificar el No_Inscripción, para modificarlo presione el boton "Cancelar"')
+            return
+        num_inscripcion = self.num_Inscripcion.get().strip()
+        num_inscripcion = f'%{num_inscripcion}%'
+        nums_inscripcion = self.run_Query('SELECT DISTINCT No_Inscripción FROM Inscritos WHERE No_Inscripción LIKE ? ORDER BY No_Inscripción ASC', (num_inscripcion,))
+        self.num_Inscripcion['values'] = nums_inscripcion
+        if nums_inscripcion and len(nums_inscripcion) == 1 and len(self.num_Inscripcion.get().strip()) == len(str(nums_inscripcion[0][0])):
+            self.num_Inscripcion.set(nums_inscripcion[0][0])
+            self.rellenar_Id_Alumno()
+        else:
+            self.cmbx_Id_Alumno.config(state="enabled")
+    
+    def rellenar_Num_Inscripcion(self,_=""):
+        id = self.cmbx_Id_Alumno.get().strip()
+        num_inscripcion = f"SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?"
+        resultado = self.run_Query(num_inscripcion, (id,))
+        if resultado:
+            self.num_Inscripcion.config(state="enabled")
+            self.num_Inscripcion.delete(0,"end")
+            self.num_Inscripcion.insert(0,resultado[0][0])
+            self.num_Inscripcion.config(state="disabled")
+        else:
+            self.num_Inscripcion.config(state="enabled")
+            self.num_Inscripcion.delete(0,"end")
+            self.num_Inscripcion.config(state="disabled")
+        self.rellenar_Apellido()
+        self.rellenar_Nombre()
+    
+    def rellenar_Id_Alumno(self, _=''):
+        num_inscripcion = self.num_Inscripcion.get().strip()
+        id = f"SELECT Id_Alumno FROM Inscritos WHERE No_Inscripción = ?"
+        resultado = self.run_Query(id, (num_inscripcion,))
+        if resultado:
+            self.cmbx_Id_Alumno.config(state="enabled")
+            self.cmbx_Id_Alumno.delete(0,"end")
+            self.cmbx_Id_Alumno.insert(0,resultado[0][0])
+            self.cmbx_Id_Alumno.config(state="disabled")
+        self.rellenar_Nombre()
+        self.rellenar_Apellido()
+    
     def rellenar_Nombre (self, _='',tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
         nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
@@ -299,8 +346,6 @@ class Inscripciones:
             self.nombres.delete(0,"end")
             self.nombres.insert(0,resultado[0][0])
             self.nombres.config(state="disabled")
-            self.rellenar_Apellido()
-            self.rellenar_Num_Inscripcion()
     
     def rellenar_Apellido(self, _='', tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
         id = self.cmbx_Id_Alumno.get().strip()
@@ -311,16 +356,7 @@ class Inscripciones:
             self.apellidos.delete(0, "end")
             self.apellidos.insert(0, resultado[0][0])
             self.apellidos.config(state="disabled")
-            
-    def rellenar_Num_Inscripcion(self,_=""):
-        id = self.cmbx_Id_Alumno.get().strip()
-        nombre = f"SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?"
-        resultado = self.run_Query(nombre, (id,))
-        if resultado:
-            self.num_Inscripcion.delete(0,"end")
-            self.num_Inscripcion.insert(0,resultado[0][0])
-            self.num_Inscripcion.config(state="disabled")
-            
+        
     def combobox_curso_events(self, _=''):
         codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
         self.cmbx_Id_Curso['values'] = codigos_cursos
@@ -383,7 +419,7 @@ class Inscripciones:
     def mostrar_Busqueda(self, _=""):
         id = self.cmbx_Id_Alumno.get().strip()
         N_Inscripcion = self.num_Inscripcion.get().strip()
-        if id :
+        if id:
             consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
             resultado = self.run_Query(consulta, (id,))
             if resultado is not None:
@@ -407,10 +443,10 @@ class Inscripciones:
                     descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
                     self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
                 return
-            else:
-                messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
+            messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
         else:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
+            
     def seleccion_Treeview(self, _=""):
         consulta = self.tView.selection()
         if consulta:
@@ -418,6 +454,7 @@ class Inscripciones:
             return resultados
         else:
             return None
+        
     def editar(self, _=""):
         resultado = self.seleccion_Treeview()
         if resultado is not None:
@@ -432,9 +469,8 @@ class Inscripciones:
             self.rellenar_Curso()
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
-            messagebox.showinfo(title="Exito", message="El boton editar funciono")
         else: 
-            messagebox.showinfo(title="Error", message="El boton editar no funciono")
+            messagebox.showinfo(title="Error", message="Debe seleccionar un curso ha editar")
 
 if __name__ == '__main__':
     app = Inscripciones()
