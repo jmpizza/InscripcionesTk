@@ -150,10 +150,11 @@ class Inscripciones:
         self.btnEditar.place(anchor='nw', x=350, y=260)
         self.btnEditar.bind("<<TreeviewSelect>>", self.seleccion_Treeview)
         self.btnEditar.bind('<Button-1>', self.editar)
-        #Botón Eliminar
+        # Botón Eliminar
         self.btnEliminar = ttk.Button(self.frm_1, name='btneliminar')
         self.btnEliminar.configure(text='Eliminar')
         self.btnEliminar.place(anchor='nw', x=450, y=260)
+        self.btnEliminar.bind('<Button-1>', self.eliminar_inscripcion)
         #Botón Cancelar
         self.btnCancelar = ttk.Button(self.frm_1, name='btncancelar')
         self.btnCancelar.configure(text='Cancelar')
@@ -414,46 +415,44 @@ class Inscripciones:
         messagebox.showinfo('Información', 'Inscripción guardada con éxito')
         
     def limpiar_Campos(self):
-        self.cmbx_Id_Curso.set('')
+        self.cmbx_Id_Alumno.set('')
+        self.num_Inscripcion.set('')
         self.fecha.delete(0, tk.END)
+        self.nombres.config(state="enabled")
+        self.nombres.delete(0, tk.END)
+        self.nombres.config(state="disabled")
+        self.apellidos.config(state="enabled")
+        self.apellidos.delete(0, tk.END)
+        self.apellidos.config(state="disabled")
+        self.cmbx_Id_Curso.set('')
         self.descripc_Curso.config(state="enabled")
         self.descripc_Curso.delete(0, tk.END)
         self.descripc_Curso.config(state="disabled")
-        self.horario.config(state="enabled")
         self.horario.delete(0, tk.END)
-        self.horario.config(state="disabled")
-        
+
     def mostrar_Busqueda(self, _=""):
         id = self.cmbx_Id_Alumno.get().strip()
         N_Inscripcion = self.num_Inscripcion.get().strip()
         if id:
-            consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE Id_Alumno = ?"
+            consulta = "SELECT Id_Alumno, Código_Curso, Horario FROM Inscritos WHERE Id_Alumno = ?"
             resultado = self.run_Query(consulta, (id,))
-            if resultado is not None:
-                if len(self.tView.get_children()) > 0:
-                    self.tView.delete(*self.tView.get_children())
-                for i in resultado:
-                    descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
-                    descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
-                    self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
-                return
-            else:
-                messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
-        elif N_Inscripcion :
-            consulta = f"SELECT Id_Alumno,Código_Curso,Horario FROM Inscritos WHERE No_Inscripción = ?"
+        elif N_Inscripcion:
+            consulta = "SELECT Id_Alumno, Código_Curso, Horario FROM Inscritos WHERE No_Inscripción = ?"
             resultado = self.run_Query(consulta, (N_Inscripcion,))
-            if resultado is not None:
-                if len(self.tView.get_children()) > 0:
-                    self.tView.delete(*self.tView.get_children())
-                for i in resultado:
-                    descripcion_C = f"SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
-                    descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
-                    self.tView.insert("", "end", values=(i[0],i[1], descripcion_Curso[0][0], i[2]))
-                return
-            messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
         else:
-            messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o N_Inscripcion")
-            
+            messagebox.showinfo(title="Error", message="Debe proporcionar un Id_Alumno o No_Inscripción")
+            return
+
+        if resultado:
+            if len(self.tView.get_children()) > 0:
+                self.tView.delete(*self.tView.get_children())
+            for i in resultado:
+                descripcion_C = "SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
+                self.tView.insert("", "end", values=(i[0], i[1], descripcion_Curso[0][0], i[2]))
+        else:
+            messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o No_Inscripción")
+         
     def seleccion_Treeview(self, _=""):
         consulta = self.tView.selection()
         if consulta:
@@ -478,6 +477,24 @@ class Inscripciones:
             self.horario.insert(0,resultado[3])
         else: 
             messagebox.showinfo(title="Error", message="Debe seleccionar un curso ha editar")
+
+    def eliminar_inscripcion(self, _=''):
+        num_inscripcion = self.num_Inscripcion.get().strip()
+        if not num_inscripcion:
+            messagebox.showerror('Error', 'Debe seleccionar un número de inscripción')
+            return
+
+        confirmacion = messagebox.askyesno('Confirmar Eliminación', '¿Está seguro que desea eliminar la inscripción?')
+        if not confirmacion:
+            return
+
+        try:
+            self.delete_Query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
+            messagebox.showinfo('Información', 'Inscripción eliminada con éxito')
+            self.limpiar_Campos()  # Limpiar campos después de eliminar
+            self.mostrar_Busqueda()  # Actualizar el Treeview después de eliminar
+        except Exception as e:
+            messagebox.showerror('Error', f'Hubo un error al eliminar la inscripción: {e}')
 
 if __name__ == '__main__':
     app = Inscripciones()
