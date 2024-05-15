@@ -15,7 +15,7 @@ class Inscripciones:
     def __init__(self, master=None):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
          # Ventana principal
-        self.db_name = PATH   
+        self.db_name = PATH
         self.win = tk.Tk(master)
         self.win.configure(background='#f7f9fd', height=600, width=800)
         self.win.geometry('800x600')
@@ -148,7 +148,7 @@ class Inscripciones:
         self.btnEditar = ttk.Button(self.frm_1, name='btneditar')
         self.btnEditar.configure(text='Editar')
         self.btnEditar.place(anchor='nw', x=350, y=260)
-        self.btnEditar.bind("<<TreeviewSelect>>", self.seleccion_Treeview)
+        self.btnEditar.bind("<<TreeviewSelect>>", self.seleccion_treeview)
         self.btnEditar.bind('<Button-1>', self.editar)
         # Botón Eliminar
         self.btnEliminar = ttk.Button(self.frm_1, name='btneliminar')
@@ -225,7 +225,7 @@ class Inscripciones:
         return self.run_Query(select)
       
     
-    def update_Query(self, tabla, filas, valores, condicion=None):
+    def update_query(self, tabla, filas, valores, condicion=None):
         set_clause = ', '.join([f'{fila} = "{valor}"' for fila, valor in zip(filas, valores)])
         update = f'UPDATE {tabla} SET {set_clause} '
         if condicion:
@@ -248,6 +248,9 @@ class Inscripciones:
 
     # Función para verificar la validez de una fecha ingresada en un campo de texto de una interfaz gráfica.
     def date_Verification(self, event=''):
+        if str(self.fecha['state']) == 'disabled':
+            messagebox.showinfo('Aviso', 'No se puede modificar la fecha, para modificarla presione el boton "Cancelar" o termine el proceso')
+            return
         # Recuperar la fecha del widget correspondiente.
         fecha = self.fecha.get() 
 
@@ -367,6 +370,9 @@ class Inscripciones:
             self.apellidos.config(state="disabled")
         
     def combobox_curso_events(self, _=''):
+        if str(self.cmbx_Id_Curso['state']) == 'disabled':
+            messagebox.showinfo('Aviso', 'No se puede modificar el Id_Curso, para modificarlo presione el boton "Cancelar" o termine el proceso')
+            return
         codigos_cursos = [codigo[0] for codigo in self.run_Query("SELECT Código_Curso FROM Cursos")]
         self.cmbx_Id_Curso['values'] = codigos_cursos
         id = self.cmbx_Id_Curso.get().strip()
@@ -376,7 +382,7 @@ class Inscripciones:
         if ids and len(ids) == 1 and len(self.cmbx_Id_Curso.get().strip()) == 7:
             self.cmbx_Id_Curso.set(ids[0][0])
             self.rellenar_Curso()
-            
+    
     def rellenar_Curso(self, event=None):
         codigo_curso = self.cmbx_Id_Curso.get()
         descripcion_curso = self.run_Query("SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
@@ -386,14 +392,37 @@ class Inscripciones:
             self.descripc_Curso.insert(0, descripcion_curso[0][0])
             self.descripc_Curso.config(state="disabled")
     
+    def limpiar_campos_de_proceso(self):
+        self.fecha.config(state="enabled")
+        self.fecha.delete(0, tk.END)
+        self.cmbx_Id_Curso.config(state="enabled")
+        self.cmbx_Id_Curso.set('')
+        self.descripc_Curso.config(state="enabled")
+        self.descripc_Curso.delete(0, tk.END)
+        self.descripc_Curso.config(state="disabled")
+        self.horario.delete(0, tk.END)
+        self.num_Inscripcion.config(state="enabled")
+        self.btnBuscar.config(state="enabled")
+        self.btnGuardar.config(state="enabled")
+        self.btnEditar.config(state="enabled")
+        self.btnEliminar.config(state="enabled")
+    
     def guardar(self, _=''):
         if str(self.btnGuardar['state']) == 'disabled':
-            messagebox.showinfo('Aviso', 'Esta en el modo eliminaciòn, para salir presione el botón "Cancelar" o elimine un curso')
+            messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
             return
         if str(self.fecha['state']) == 'disabled':
-            #Edicion
-            
-            pass
+            self.cmbx_Id_Alumno.config(state="enabled")
+            id = self.cmbx_Id_Alumno.get().strip()
+            self.cmbx_Id_Alumno.config(state="disabled")
+            self.cmbx_Id_Curso.config(state="enabled")
+            codigo_curso = self.cmbx_Id_Curso.get().strip()
+            nuevohorario = self.horario.get()
+            self.update_query('Inscritos', ['Horario'], [nuevohorario], f'Id_Alumno = "{id}" AND Código_Curso = "{codigo_curso}"')
+            self.limpiar_campos_de_proceso()
+            messagebox.showinfo('Información', 'Cambios guardados con éxito')
+            self.mostrar_busqueda()
+            return
         
         fecha = self.date_Verification('Guardar')
         if fecha is None:
@@ -409,39 +438,23 @@ class Inscripciones:
             return
         no_inscripcion = self.run_Query("SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?", (id_alumno,))
         if not no_inscripcion:
-            self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
-            no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")
+            no_inscripcion = self.run_Query("SELECT Num_Actual FROM N_Inscrito")
+            self.update_query('N_Inscrito', ['Num_Actual'], [no_inscripcion[0][0] + 1], 'Num_Actual = ' + str(no_inscripcion[0][0]))
         no_inscripcion = no_inscripcion[0][0]
         if self.run_Query("SELECT Código_Curso FROM Inscritos WHERE No_Inscripción = ? AND Código_Curso = ?", (no_inscripcion, codigo_curso)):
             messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
-            self.limpiar_Campos()
+            self.limpiar_campos_de_proceso
             return
         
         self.insert_Query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'],
                           [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
-        #self.cargar_Inscripciones()
-        self.limpiar_Campos()
+        self.limpiar_campos_de_proceso()
         messagebox.showinfo('Información', 'Inscripción guardada con éxito')
-        
-    def limpiar_Campos(self):
-        self.cmbx_Id_Alumno.set('')
-        self.num_Inscripcion.set('')
-        self.fecha.delete(0, tk.END)
-        self.nombres.config(state="enabled")
-        self.nombres.delete(0, tk.END)
-        self.nombres.config(state="disabled")
-        self.apellidos.config(state="enabled")
-        self.apellidos.delete(0, tk.END)
-        self.apellidos.config(state="disabled")
-        self.cmbx_Id_Curso.set('')
-        self.descripc_Curso.config(state="enabled")
-        self.descripc_Curso.delete(0, tk.END)
-        self.descripc_Curso.config(state="disabled")
-        self.horario.delete(0, tk.END)
+        self.mostrar_busqueda()
 
     def mostrar_busqueda(self, _=""):
-        if str(self.btnBuscar['state']) == 'disabled':
-            messagebox.showinfo('Aviso', 'Esta en el modo eliminaciòn, para salir presione el botón "Cancelar" o elimine un curso')
+        if str(self.btnBuscar['state']) == 'disabled' and _ == "":
+            messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
             return
         id = self.cmbx_Id_Alumno.get().strip()
         N_Inscripcion = self.num_Inscripcion.get().strip()
@@ -467,7 +480,7 @@ class Inscripciones:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o No_Inscripción")
             return 
          
-    def seleccion_Treeview(self, _=""):
+    def seleccion_treeview(self, _=""):
         consulta = self.tView.selection()
         if consulta:
             resultados = self.tView.item(consulta[0], option = "values")
@@ -477,19 +490,18 @@ class Inscripciones:
         
     def editar(self, _=""):
         if str(self.btnEditar['state']) == 'disabled':
-            messagebox.showinfo('Aviso', 'Esta en el modo eliminaciòn, para salir presione el botón "Cancelar" o elimine un curso')
+            messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
             return
-        resultado = self.seleccion_Treeview()
+        resultado = self.seleccion_treeview()
         if resultado is not None:
             self.cmbx_Id_Curso.delete(0,"end")
             self.cmbx_Id_Curso.insert(0,resultado[1])
             self.cmbx_Id_Alumno.delete(0,"end")
             self.cmbx_Id_Alumno.insert(0,resultado[0])
-            self.rellenar_Apellido()
-            self.rellenar_Nombre()
             self.descripc_Curso.config(state="enabled")
             self.descripc_Curso.delete(0,"end")
             self.rellenar_Curso()
+            self.cmbx_Id_Curso.config(state="disabled")
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
             fecha = self.run_Query('SELECT fecha_Inscripción FROM Inscritos WHERE Id_Alumno = ? AND Código_Curso = ?', (resultado[0],resultado[1]))[0][0]
@@ -499,16 +511,40 @@ class Inscripciones:
             self.fecha.delete(0, "end")
             self.fecha.insert(0,fecha)
             self.fecha.config(state="disabled")
+            messagebox.showinfo('Información', 'Una vez finalizada la ediciòn presione el botón "Guardar"')
+            self.num_Inscripcion.config(state="disabled")
+            self.cmbx_Id_Alumno.config(state="disabled")
+            self.btnEditar.config(state="disabled")
+            self.btnBuscar.config(state="disabled")
+            self.btnEliminar.config(state="disabled")
         else: 
-            messagebox.showinfo(title="Error", message="Debe seleccionar un curso ha editar")
+            messagebox.showinfo(title="Error", message="Debe seleccionar un curso a editar")
 
     def eliminar_opciones(self, _=''):
+        if str(self.btnEliminar['state']) == 'disabled':
+            messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
+            return
         num_inscripcion = self.num_Inscripcion.get().strip()
+        if str(self.btnGuardar['state']) == 'disabled':
+            resultado = self.seleccion_treeview()
+            if resultado is not None:
+                self.delete_query('Inscritos', f'No_Inscripción = "{num_inscripcion}" AND Id_Alumno = "{resultado[0]}" AND Código_Curso = "{resultado[1]}"')
+                if len(self.tView.get_children()) > 1:
+                    self.mostrar_busqueda(1)
+                else:
+                    self.tView.delete(*self.tView.get_children())
+                messagebox.showinfo('Información', 'Curso eliminado con éxito')
+            else:
+                messagebox.showinfo('Aviso', 'Debe seleccionar un curso para eliminar')
+                return
+            self.limpiar_campos_de_proceso()
+            return
         if not num_inscripcion:
             messagebox.showerror('Error', 'Debe seleccionar un número de inscripción')
             return
         if not self.mostrar_busqueda():
             return
+        
         def opcion(opcion):
             if opcion == 'aceptar':
                 if self.opcion_seleccionada.get() == 'inscripcion':
@@ -516,21 +552,22 @@ class Inscripciones:
                     self.btnBuscar.config(state="disabled")
                     self.btnGuardar.config(state="disabled")
                     self.btnEditar.config(state="disabled")
-                    
-                    
                 elif self.opcion_seleccionada.get() == 'registro':
                     try:
                         self.delete_query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
                         messagebox.showinfo('Información', 'Inscripción eliminada con éxito')
-                        self.limpiar_Campos()  # Limpiar campos después de eliminar
-                        self.mostrar_Busqueda()  # Actualizar el Treeview después de eliminar
+                        self.cancelar() # Limpiar campos después de eliminar
                     except Exception as e:
                         messagebox.showerror('Error', f'Hubo un error al eliminar la inscripción: {e}')
                 else:
                     messagebox.showerror('Error', 'Debe seleccionar una opción')
             self.eliminar_Opciones.destroy()
-        
+
         self.eliminar_Opciones = tk.Toplevel()
+        try:
+            self.eliminar_Opciones.grab_set()
+        except:
+            pass
         self.opcion_seleccionada = tk.StringVar()
         self.eliminar_Opciones.pack_propagate(0)
         self.rdbtneliminar_Inscripcion = tk.Radiobutton(self.eliminar_Opciones, text="Eliminar un curso", variable=self.opcion_seleccionada, value="inscripcion")
@@ -541,6 +578,7 @@ class Inscripciones:
         self.btnconfirmar_Eliminacion.pack(side='left')
         self.btneliminar_Cancelar = ttk.Button(self.eliminar_Opciones, text="Cancelar", command=lambda:opcion('cancelar'))
         self.btneliminar_Cancelar.pack(side='right')
+        
 
     def cancelar(self, _=''):
         self.num_Inscripcion.config(state="enabled")
@@ -564,6 +602,7 @@ class Inscripciones:
         self.btnBuscar.config(state="enabled")
         self.btnGuardar.config(state="enabled")
         self.btnEditar.config(state="enabled")
+        self.btnEliminar.config(state="enabled")
         self.tView.delete(*self.tView.get_children())
         
         
