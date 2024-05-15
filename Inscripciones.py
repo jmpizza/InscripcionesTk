@@ -136,7 +136,7 @@ class Inscripciones:
         self.btnBuscar = ttk.Button(self.frm_1, name='btnbuscar')
         self.btnBuscar.configure(text='Buscar')
         self.btnBuscar.place(anchor='nw', x=150, y=260)
-        self.btnBuscar.bind('<Button-1>', self.mostrar_Busqueda)
+        self.btnBuscar.bind('<Button-1>', self.mostrar_busqueda)
         
         #Botón Guardar
         self.btnGuardar = ttk.Button(self.frm_1, name='btnguardar')
@@ -154,7 +154,7 @@ class Inscripciones:
         self.btnEliminar = ttk.Button(self.frm_1, name='btneliminar')
         self.btnEliminar.configure(text='Eliminar')
         self.btnEliminar.place(anchor='nw', x=450, y=260)
-        self.btnEliminar.bind('<Button-1>', self.eliminar_inscripcion)
+        self.btnEliminar.bind('<Button-1>', self.eliminar_opciones)
         #Botón Cancelar
         self.btnCancelar = ttk.Button(self.frm_1, name='btncancelar')
         self.btnCancelar.configure(text='Cancelar')
@@ -386,6 +386,11 @@ class Inscripciones:
             self.descripc_Curso.config(state="disabled")
     
     def guardar(self, _=''):
+        if str(self.fecha['state']) == 'disabled':
+            #Edicion
+            
+            pass
+        
         fecha = self.date_Verification('Guardar')
         if fecha is None:
             return
@@ -403,7 +408,7 @@ class Inscripciones:
             self.run_Query("INSERT INTO N_Inscrito VALUES (NULL)")
             no_inscripcion = self.run_Query("SELECT MAX(Nums_Usados) FROM N_Inscrito")
         no_inscripcion = no_inscripcion[0][0]
-        if self.run_Query("SELECT Código_Curso FROM Inscritos WHERE No_Inscripción = ?", (no_inscripcion,)):
+        if self.run_Query("SELECT Código_Curso FROM Inscritos WHERE No_Inscripción = ? AND Código_Curso = ?", (no_inscripcion, codigo_curso)):
             messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
             self.limpiar_Campos()
             return
@@ -430,7 +435,7 @@ class Inscripciones:
         self.descripc_Curso.config(state="disabled")
         self.horario.delete(0, tk.END)
 
-    def mostrar_Busqueda(self, _=""):
+    def mostrar_busqueda(self, _=""):
         id = self.cmbx_Id_Alumno.get().strip()
         N_Inscripcion = self.num_Inscripcion.get().strip()
         if id:
@@ -450,8 +455,10 @@ class Inscripciones:
                 descripcion_C = "SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
                 descripcion_Curso = self.run_Query(descripcion_C, (i[1],))
                 self.tView.insert("", "end", values=(i[0], i[1], descripcion_Curso[0][0], i[2]))
+            return 1
         else:
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o No_Inscripción")
+            return 
          
     def seleccion_Treeview(self, _=""):
         consulta = self.tView.selection()
@@ -475,26 +482,51 @@ class Inscripciones:
             self.rellenar_Curso()
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
+            fecha = self.run_Query('SELECT fecha_Inscripción FROM Inscritos WHERE Id_Alumno = ? AND Código_Curso = ?', (resultado[0],resultado[1]))[0][0]
+            year, month, day = fecha.split('-')
+            fecha = f'{day}/{month}/{year}'
+            self.fecha.config(state="enabled")
+            self.fecha.delete(0, "end")
+            self.fecha.insert(0,fecha)
+            self.fecha.config(state="disabled")
         else: 
             messagebox.showinfo(title="Error", message="Debe seleccionar un curso ha editar")
 
-    def eliminar_inscripcion(self, _=''):
+    
+    def eliminar_opciones(self, _=''):
         num_inscripcion = self.num_Inscripcion.get().strip()
         if not num_inscripcion:
             messagebox.showerror('Error', 'Debe seleccionar un número de inscripción')
             return
-
-        confirmacion = messagebox.askyesno('Confirmar Eliminación', '¿Está seguro que desea eliminar la inscripción?')
-        if not confirmacion:
+        if not self.mostrar_busqueda():
             return
-
-        try:
-            self.delete_Query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
-            messagebox.showinfo('Información', 'Inscripción eliminada con éxito')
-            self.limpiar_Campos()  # Limpiar campos después de eliminar
-            self.mostrar_Busqueda()  # Actualizar el Treeview después de eliminar
-        except Exception as e:
-            messagebox.showerror('Error', f'Hubo un error al eliminar la inscripción: {e}')
+        def opcion(opcion):
+            if opcion == 'aceptar':
+                if self.opcion_seleccionada.get() == 'inscripcion':
+                    print('Eliminar inscripcion')
+                elif self.opcion_seleccionada.get() == 'registro':
+                    try:
+                        self.delete_Query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
+                        messagebox.showinfo('Información', 'Inscripción eliminada con éxito')
+                        self.limpiar_Campos()  # Limpiar campos después de eliminar
+                        self.mostrar_Busqueda()  # Actualizar el Treeview después de eliminar
+                    except Exception as e:
+                        messagebox.showerror('Error', f'Hubo un error al eliminar la inscripción: {e}')
+                else:
+                    messagebox.showerror('Error', 'Debe seleccionar una opción')
+            self.eliminar_Opciones.destroy()
+        
+        self.eliminar_Opciones = tk.Toplevel()
+        self.opcion_seleccionada = tk.StringVar()
+        self.eliminar_Opciones.pack_propagate(0)
+        self.rdbtneliminar_Inscripcion = tk.Radiobutton(self.eliminar_Opciones, text="Eliminar un curso", variable=self.opcion_seleccionada, value="inscripcion")
+        self.rdbtneliminar_Inscripcion.pack()
+        self.rdbtneliminar_Registro = tk.Radiobutton(self.eliminar_Opciones, text="Eliminar el registro", variable=self.opcion_seleccionada, value="registro")
+        self.rdbtneliminar_Registro.pack()
+        self.btnconfirmar_Eliminacion = ttk.Button(self.eliminar_Opciones, text="Confirmar", command=lambda:opcion('aceptar'))
+        self.btnconfirmar_Eliminacion.pack(side='left')
+        self.btneliminar_Cancelar = ttk.Button(self.eliminar_Opciones, text="Cancelar", command=lambda:opcion('cancelar'))
+        self.btneliminar_Cancelar.pack(side='right')
 
 if __name__ == '__main__':
     app = Inscripciones()
