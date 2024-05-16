@@ -109,7 +109,7 @@ class Inscripciones:
         self.cmbx_Id_Curso.place(anchor='nw', width=166, x=100, y=185)
         self.cmbx_Id_Curso.bind('<KeyRelease>', self.combobox_curso_events)
         self.cmbx_Id_Curso.bind('<Button-1>', self.combobox_curso_events)
-        self.cmbx_Id_Curso.bind('<<ComboboxSelected>>', self.rellenar_Curso)
+        self.cmbx_Id_Curso.bind('<<ComboboxSelected>>', self.rellenar_curso)
         
         #Label Descripción del Curso
         self.lblDscCurso = ttk.Label(self.frm_1, name='lbldsccurso')
@@ -311,7 +311,10 @@ class Inscripciones:
         num_inscripcion = self.num_Inscripcion.get().strip()
         num_inscripcion = f'%{num_inscripcion}%'
         nums_inscripcion = self.run_query('SELECT DISTINCT No_Inscripción FROM Inscritos WHERE No_Inscripción LIKE ? ORDER BY No_Inscripción ASC', (num_inscripcion,))
-        self.num_Inscripcion['values'] = nums_inscripcion
+        if nums_inscripcion:
+            self.num_Inscripcion['values'] = nums_inscripcion
+        else:
+            self.num_Inscripcion['values'] = []
         if nums_inscripcion and len(nums_inscripcion) == 1 and len(self.num_Inscripcion.get().strip()) == len(str(nums_inscripcion[0][0])):
             self.num_Inscripcion.set(nums_inscripcion[0][0])
             self.rellenar_id_alumno()
@@ -379,7 +382,7 @@ class Inscripciones:
             self.cmbx_Id_Curso.set(ids[0][0])
             self.rellenar_Curso()
     
-    def rellenar_Curso(self, event=None):
+    def rellenar_curso(self, event=None):
         codigo_curso = self.cmbx_Id_Curso.get()
         descripcion_curso = self.run_query("SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
         if descripcion_curso:
@@ -497,7 +500,7 @@ class Inscripciones:
             self.cmbx_Id_Alumno.insert(0,resultado[0])
             self.descripc_Curso.config(state="enabled")
             self.descripc_Curso.delete(0,"end")
-            self.rellenar_Curso()
+            self.rellenar_curso()
             self.cmbx_Id_Curso.config(state="disabled")
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
@@ -529,9 +532,7 @@ class Inscripciones:
                 if len(self.tView.get_children()) > 1:
                     self.mostrar_busqueda(1)
                 else:
-                    self.tView.delete(*self.tView.get_children())
-                    self.rellenar_num_inscripcion()
-                    self.cmbx_Id_Alumno.config(state="enabled")
+                    self.cancelar()
                 messagebox.showinfo('Información', 'Curso eliminado con éxito')
             else:
                 messagebox.showinfo('Aviso', 'Debe seleccionar un curso para eliminar')
@@ -551,6 +552,8 @@ class Inscripciones:
                     self.btnBuscar.config(state="disabled")
                     self.btnGuardar.config(state="disabled")
                     self.btnEditar.config(state="disabled")
+                    self.cmbx_Id_Alumno.config(state="disabled")
+                    self.num_Inscripcion.config(state="disabled")
                 elif self.opcion_seleccionada.get() == 'registro':
                     try:
                         self.delete_query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
