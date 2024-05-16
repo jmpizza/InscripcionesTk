@@ -21,6 +21,13 @@ class Inscripciones:
         self.win.geometry('800x600')
         self.win.resizable(False, False)
         self.win.title('Inscripciones de Materias y Cursos')
+        window_width = 800
+        window_height = 600
+        screen_width = self.win.winfo_screenwidth()
+        screen_height = self.win.winfo_screenheight()
+        position_top = int(screen_height / 2 - window_height / 2)
+        position_right = int(screen_width / 2 - window_width / 2)
+        self.win.geometry(f"{window_width}x{window_height}+{position_right}+{position_top}")
         # Crea los frames
         self.frm_1 = tk.Frame(self.win, name='frm_1')
         self.frm_1.configure(background='#f7f9fd', height=600, width=800)
@@ -46,8 +53,8 @@ class Inscripciones:
         #Combobox No_Inscripción
         self.num_Inscripcion = ttk.Combobox(self.frm_1, name='num_inscripcion')
         self.num_Inscripcion.place(anchor='nw', width=100, x=682, y=42)
-        self.num_Inscripcion.bind('<KeyRelease>', self.num_Inscripcion_Update)
-        self.num_Inscripcion.bind('<Button-1>', self.num_Inscripcion_Update)
+        self.num_Inscripcion.bind('<KeyRelease>', self.num_inscripcion_update)
+        self.num_Inscripcion.bind('<Button-1>', self.num_inscripcion_update)
         self.num_Inscripcion.bind('<<ComboboxSelected>>', self.rellenar_Id_Alumno)
         
         #Label Fecha
@@ -308,7 +315,7 @@ class Inscripciones:
         else:
             self.num_Inscripcion.config(state="enabled")
             
-    def num_Inscripcion_Update(self, _=''):
+    def num_inscripcion_update(self, _=''):
         if str(self.num_Inscripcion['state']) == 'disabled':
             messagebox.showinfo('Aviso', 'No se puede modificar el No_Inscripción, para modificarlo presione el boton "Cancelar"')
             return
@@ -450,6 +457,7 @@ class Inscripciones:
                           [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
         self.limpiar_campos_de_proceso()
         messagebox.showinfo('Información', 'Inscripción guardada con éxito')
+        self.rellenar_Num_Inscripcion()
         self.mostrar_busqueda()
 
     def mostrar_busqueda(self, _=""):
@@ -604,6 +612,7 @@ class Inscripciones:
         self.btnEditar.config(state="enabled")
         self.btnEliminar.config(state="enabled")
         self.tView.delete(*self.tView.get_children())
+        self.num_inscripcion_update()
         
         
         
