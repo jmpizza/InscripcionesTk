@@ -575,6 +575,11 @@ class Inscripciones:
         self.eliminar_Opciones.title('Eliminar')
         self.eliminar_Opciones.resizable(False, False)
         self.eliminar_Opciones.iconbitmap(PATH + '/img/antipenguin.ico')
+        window_width = self.eliminar_Opciones.winfo_reqwidth()
+        window_height = self.eliminar_Opciones.winfo_reqheight()
+        position_right = int(self.eliminar_Opciones.winfo_screenwidth()/2 - window_width/2)
+        position_down = int(self.eliminar_Opciones.winfo_screenheight()/2 - window_height/2)
+        self.eliminar_Opciones.geometry("+{}+{}".format(position_right, position_down))
         try:
             self.eliminar_Opciones.grab_set()
         except:
