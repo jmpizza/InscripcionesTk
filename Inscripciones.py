@@ -9,18 +9,19 @@ from datetime import date
 from pathlib import Path
 import signal
 
-PATH = str((Path(__file__).resolve()).parent) + '/db/Inscripciones.db'
+PATH = str((Path(__file__).resolve()).parent)
 
 class Inscripciones:
     def __init__(self, master=None):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
-         # Ventana principal
-        self.db_name = PATH
+        # Ventana principal
+        self.db_name = PATH + '/db/Inscripciones.db'
         self.win = tk.Tk(master)
         self.win.configure(background='#f7f9fd', height=600, width=800)
         self.win.geometry('800x600')
         self.win.resizable(False, False)
         self.win.title('Inscripciones de Materias y Cursos')
+        self.win.iconbitmap(PATH + '/img/penguin.ico')
         window_width = 800
         window_height = 600
         screen_width = self.win.winfo_screenwidth()
@@ -134,10 +135,15 @@ class Inscripciones:
         ''' Botones  de la Aplicación'''
         #Botón Style
         self.btnStyle = ttk.Style()
-        self.btnStyle.configure('TButton', background='#f7f9fd',font=('Arial', 11, 'bold'), relief='raised',padding=5)
+        self.btnStyle.configure('TButton',
+                                background='#f7f9fd',
+                                font=('Arial', 11, 'bold'),
+                                relief='raised',
+                                padding=(2,5))
         self.btnStyle.map('TButton',
-                            foreground=[('!disabled', '#0000ff'), ('active', '#00ffff'), ('disabled', '#f7f9fe')], 
-                            background=[('!disabled', '#ffffff'), ('active', '#00ffff'), ('disabled', '#000000')])
+                        foreground=[('!disabled', '#0000ff'), ('active', '#00ffff'), ('disabled', '#a9a9a9')],  
+                        background=[('!disabled', '#ffffff'), ('active', '#00ffff'), ('disabled', '#dcdcdc')], 
+                        relief=[('disabled', 'flat')]) 
         
         #Boton Buscar
         self.btnBuscar = ttk.Button(self.frm_1, name='btnbuscar')
@@ -566,6 +572,9 @@ class Inscripciones:
             self.eliminar_Opciones.destroy()
 
         self.eliminar_Opciones = tk.Toplevel()
+        self.eliminar_Opciones.title('Eliminar')
+        self.eliminar_Opciones.resizable(False, False)
+        self.eliminar_Opciones.iconbitmap(PATH + '/img/antipenguin.ico')
         try:
             self.eliminar_Opciones.grab_set()
         except:
@@ -607,10 +616,6 @@ class Inscripciones:
         self.btnEliminar.config(state="enabled")
         self.tView.delete(*self.tView.get_children())
         self.num_inscripcion_update()
-        
-        
-        
-        
         
 if __name__ == '__main__':
     app = Inscripciones()
