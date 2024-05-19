@@ -386,7 +386,7 @@ class Inscripciones:
         self.cmbx_Id_Curso['values'] = ids
         if ids and len(ids) == 1 and len(self.cmbx_Id_Curso.get().strip()) == 7:
             self.cmbx_Id_Curso.set(ids[0][0])
-            self.rellenar_Curso()
+            self.rellenar_curso()
     
     def rellenar_curso(self, event=None):
         codigo_curso = self.cmbx_Id_Curso.get()
@@ -560,6 +560,7 @@ class Inscripciones:
                     self.btnEditar.config(state="disabled")
                     self.cmbx_Id_Alumno.config(state="disabled")
                     self.num_Inscripcion.config(state="disabled")
+                    self.cmbx_Id_Curso.config(state="disabled")
                 elif self.opcion_seleccionada.get() == 'registro':
                     try:
                         self.delete_query('Inscritos', f'No_Inscripción = "{num_inscripcion}"')
