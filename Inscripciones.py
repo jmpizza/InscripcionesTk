@@ -253,44 +253,32 @@ class Inscripciones:
         if str(self.fecha['state']) == 'disabled':
             messagebox.showinfo('Aviso', 'No se puede modificar la fecha, para modificarla presione el boton "Cancelar" o termine el proceso')
             return
-        # Recuperar la fecha del widget correspondiente.
         fecha = self.fecha.get() 
-
-        # Si la fecha excede los 10 caracteres permitidos, mostrar error y recortarla.
         if len(fecha) > 10:
             messagebox.showerror('Error', 'La fecha debe tener maximo 10 caracteres')
             fecha = fecha[:10]
 
-        # Si la fecha parcialmente ingresada parece ser día y mes sin año, agregar el separador.
         if re.match(r'^([0-9]{3}|[0-9]{2}/[0-9]{3})$', fecha):
             fecha= re.sub(r'([0-9]{2})([0-9])', r'\1/\2', fecha)
 
-        # Limpiar la fecha de cualquier carácter no numérico o barra.
         fecha = re.sub(r'[^0-9/]', '', fecha)
 
-        # Limpiar el campo de texto y reinsertar la fecha procesada.
         self.fecha.delete(0, tk.END)
         self.fecha.insert(0, fecha)
         
-        # Si la fecha es exactamente 10 caracteres y el evento es 'Guardar', validar formato.
         if len(fecha) == 10 and event == 'Guardar':
-            # Validar que el formato de la fecha sea dd/mm/aaaa.
             if not re.match(r'^\d{2}/\d{2}/\d{4}$', fecha):
                 messagebox.showerror('Error', 'La fecha debe tener el formato dd/mm/aaaa')
                 return None
-            # Descomponer la fecha en día, mes y año y convertirlos a enteros.
+
             day, month, year = map(int, fecha.split('/'))
 
-            # Intentar crear un objeto de fecha para verificar su validez.
             try:
                 date(year, month, day)
-                # Si la fecha es válida, devolver en formato aaaa-mm-dd.
                 return f'{year}-{month}-{day}'
             except ValueError:
-                # Si la fecha es inválida, mostrar error.
                 messagebox.showerror('Error', 'La fecha ingresada no es valida')
                 return None
-        #Si el evento es 'Guardar' pero la fecha tiene una longitud diferente de 10, mostrar error.
         elif len(fecha) != 10 and event == 'Guardar':
             messagebox.showerror('Error', 'La fecha debe tener al menos 10 caracteres')
             return None
@@ -450,7 +438,10 @@ class Inscripciones:
             messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
             self.limpiar_campos_de_proceso
             return
-        
+        resultado = self.run_query("SELECT Código_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if not resultado or len(resultado) > 1:
+            messagebox.showerror('Error', 'El curso seleccionado no existe')
+            return
         self.insert_query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'],
                           [no_inscripcion, id_alumno, fecha, codigo_curso, horas])
         self.limpiar_campos_de_proceso()
