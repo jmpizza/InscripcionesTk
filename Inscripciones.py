@@ -429,6 +429,10 @@ class Inscripciones:
         if not id_alumno or not codigo_curso:
             messagebox.showerror('Error', 'Debe seleccionar un alumno y un curso')
             return
+        resultadoIdAlumno = self.run_query("SELECT Id_Alumno FROM Alumnos WHERE Id_Alumno = ?", (id_alumno,))
+        if not resultadoIdAlumno or len(resultadoIdAlumno) > 1:
+            messagebox.showerror('Error', 'El alumno seleccionado no existe')
+            return
         no_inscripcion = self.run_query("SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?", (id_alumno,))
         if not no_inscripcion:
             no_inscripcion = self.run_query("SELECT Num_Actual FROM N_Inscrito")
@@ -438,8 +442,8 @@ class Inscripciones:
             messagebox.showerror('Error', 'Ya existe una inscripción para este curso')
             self.limpiar_campos_de_proceso
             return
-        resultado = self.run_query("SELECT Código_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
-        if not resultado or len(resultado) > 1:
+        resultadoIdCurso = self.run_query("SELECT Código_Curso FROM Cursos WHERE Código_Curso = ?", (codigo_curso,))
+        if not resultadoIdCurso or len(resultadoIdCurso) > 1:
             messagebox.showerror('Error', 'El curso seleccionado no existe')
             return
         self.insert_query('Inscritos', ['No_Inscripción', 'Id_Alumno', 'Fecha_Inscripción', 'Código_Curso', 'Horario'],
