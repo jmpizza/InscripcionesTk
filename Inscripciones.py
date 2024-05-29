@@ -316,17 +316,26 @@ class Inscripciones:
             self.cmbx_Id_Alumno.config(state="enabled")
     
     def rellenar_num_inscripcion(self,_=""):
+        #Se obtiene el valor del combobox de ID alumno
         id = self.cmbx_Id_Alumno.get().strip()
+        #Se hace una consulta del numero de inscripcio en la tabla Inscritos, donde coincidan el numero de inscripcion de la tabla y el del combobox
         num_inscripcion = f"SELECT No_Inscripción FROM Inscritos WHERE Id_Alumno = ?"
+        #Resultado es el numero de inscripcion
         resultado = self.run_query(num_inscripcion, (id,))
         if resultado:
+            #Se habilita el combobox num_Inscripcion
             self.num_Inscripcion.config(state="enabled")
+            #Se elimina la informacion que haya en el combobox
             self.num_Inscripcion.delete(0,"end")
+            #Se inserta el resultado
             self.num_Inscripcion.insert(0,resultado[0][0])
+            #Se deshabilita el combobox num_Inscripcion
             self.num_Inscripcion.config(state="disabled")
         else:
+            #Se habilita el combobos num_Inscripcion y se elimina su contenido
             self.num_Inscripcion.config(state="enabled")
             self.num_Inscripcion.delete(0,"end")
+        #Se llama a las funciones rellenar_apellido y rellenar_nombre
         self.rellenar_apellido()
         self.rellenar_nombre()
     
@@ -343,23 +352,37 @@ class Inscripciones:
         self.rellenar_apellido()
     
     def rellenar_nombre (self, _='',tabla='Alumnos',columna='Nombres',celda='Id_Alumno'):
+        #Se obtiene el valor del combobox de ID alumno
         id = self.cmbx_Id_Alumno.get().strip()
+        #Se hace una consulta del nombre en la tabla Alumnos, donde coincidan el numero de inscripcion de la tabla y el del combobox
         nombre = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
+        #Resultado es el nombre
         resultado = self.run_query(nombre, (id,))
         if resultado:
+            #Se habilita el entry nombres
             self.nombres.config(state="enabled")
+            #Se elimina el contenido
             self.nombres.delete(0,"end")
+            #Se inserta el resultado
             self.nombres.insert(0,resultado[0][0])
+            #Se deshabilita el entry nombres
             self.nombres.config(state="disabled")
     
     def rellenar_apellido(self, _='', tabla='Alumnos', columna='Apellidos', celda='Id_Alumno'):
+        #Se obtiene el valor del combobox de ID alumno
         id = self.cmbx_Id_Alumno.get().strip()
+        #Se hace una consulta del apellido en la tabla Alumnos, donde coincidan el numero de inscripcion de la tabla y el del combobox
         apellido = f"SELECT {columna} FROM {tabla} WHERE {celda} = ?"
+        #Resultado es el apellido
         resultado = self.run_query(apellido, (id,))
         if resultado:
+            #Se habilita el entry apellido
             self.apellidos.config(state="enabled")
+            #Se elimina el contenido
             self.apellidos.delete(0, "end")
+            #Se inserta el resultado
             self.apellidos.insert(0, resultado[0][0])
+            #Se deshabilita el entry nombres
             self.apellidos.config(state="disabled")
         
     def combobox_curso_events(self, _=''):
@@ -457,33 +480,48 @@ class Inscripciones:
         if str(self.btnBuscar['state']) == 'disabled' and _ == "":
             messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
             return
+        #Se obtiene el contenido del combobox id alumno
         id = self.cmbx_Id_Alumno.get().strip()
+        #Se obtiene el contenido del combobox Numero de inscripcion
         N_Inscripcion = self.num_Inscripcion.get().strip()
         if id:
+            #Se hace una consulta del Id en la tabla Alumnos y se busca tanto el Id del alumno, el codigo del curso y la hora en la que se inscribio al que esta inscrito
             consulta = "SELECT Id_Alumno, Código_Curso, Horario FROM Inscritos WHERE Id_Alumno = ?"
+            #El resultado es el Id del alumno, el Codigo del curso
             resultado = self.run_query(consulta, (id,))
         elif N_Inscripcion:
+            #Se hace una consulta del Numero de inscripcion en la tabla Alumnos y se busca tanto el Id del alumno, el codigo del curso y la hora en la que se inscribio al que esta inscrito
             consulta = "SELECT Id_Alumno, Código_Curso, Horario FROM Inscritos WHERE No_Inscripción = ?"
+            #El resultado es el Id del alumno y el Codigo del curso
             resultado = self.run_query(consulta, (N_Inscripcion,))
         else:
+            #Ocurre cuando no se obtiene nada de ninguno de los dos combobox
             messagebox.showinfo(title="Error", message="Debe proporcionar un Id_Alumno o No_Inscripción")
             return
 
         if resultado:
+            #Se evalua si el Treeview esta vacio, si no lo esta se elimina su contenido
             if len(self.tView.get_children()) > 0:
                 self.tView.delete(*self.tView.get_children())
+            #Debido a que el resultado puede generar varios resultados, se hace un bucle que itere sobre cada uno de los resultados
             for i in resultado:
+                #Se busca la descripcion del curso de la tabla cursos donde el codigo del curso sea igual al codigo del curso al que el alumno esta inscrito
                 descripcion_C = "SELECT Descrip_Curso FROM Cursos WHERE Código_Curso = ?"
+                #La consulta se hace con i[1], ya que, el resultado trae el id del alumno, el codigo del curso y la hora, y se especifica la posicion del codigo del curso
                 descripcion_Curso = self.run_query(descripcion_C, (i[1],))
+                #Se inserta los valores de i y la consulta que se hizo anteriormente al treeview
                 self.tView.insert("", "end", values=(i[0], i[1], descripcion_Curso[0][0], i[2]))
             return 1
         else:
+            #Ocurre cuando el id del alumno o el numero de inscripcion no estan en la tabla inscritos
             messagebox.showinfo(title="Error", message="No se encontraron coincidencias del Id_Alumno o No_Inscripción")
             return 
          
     def seleccion_treeview(self, _=""):
+        #Consulta es una tupla de los elementos seleccionados en el treeview
         consulta = self.tView.selection()
         if consulta:
+            #Despues de evaluar si consulta no esta vacia, se buscan todos los valores asociados en el treeview con respecto al identificador de la tupla, es decir, consulta [0]
             resultados = self.tView.item(consulta[0], option = "values")
             return resultados
         else:
@@ -493,18 +531,26 @@ class Inscripciones:
         if str(self.btnEditar['state']) == 'disabled':
             messagebox.showinfo('Aviso', 'Se esta llevando a cabo un proceso, para salir presione el botón "Cancelar" o termine el proceso')
             return
+        #Se llama la funcion seleccion_treeview y se almacena sus resultados en la variable resultado
         resultado = self.seleccion_treeview()
         if resultado is not None:
+            #Se elimina la informacion del combobox id curso y se inserta el valor seleccionado del treeview
             self.cmbx_Id_Curso.delete(0,"end")
             self.cmbx_Id_Curso.insert(0,resultado[1])
+            #Se elimina la informacion del combobox id alumno y se inserta el valor seleccionado del treeview
             self.cmbx_Id_Alumno.delete(0,"end")
             self.cmbx_Id_Alumno.insert(0,resultado[0])
+            #Se habilita el entry descripcion curso y se elimina su informacion 
             self.descripc_Curso.config(state="enabled")
             self.descripc_Curso.delete(0,"end")
+            #Se llama a la funcion rellenar curso
             self.rellenar_curso()
+            #Se deshabilita el combobox id curso
             self.cmbx_Id_Curso.config(state="disabled")
+            #Se elimina la informacion del entry horario y se inserta el valor seleccionado del treeview
             self.horario.delete(0, "end")
             self.horario.insert(0,resultado[3])
+            #Se hace la consulta de la fecha en que se hizo la inscripcion seleccionada del treeview y se inserta en el entry de fecha
             fecha = self.run_query('SELECT fecha_Inscripción FROM Inscritos WHERE Id_Alumno = ? AND Código_Curso = ?', (resultado[0],resultado[1]))[0][0]
             year, month, day = fecha.split('-')
             fecha = f'{day}/{month}/{year}'
@@ -512,13 +558,16 @@ class Inscripciones:
             self.fecha.delete(0, "end")
             self.fecha.insert(0,fecha)
             self.fecha.config(state="disabled")
+            #Se muestra un aviso para el usuario sobre el siguiente paso que debe hacer
             messagebox.showinfo('Información', 'Una vez finalizada la ediciòn presione el botón "Guardar"')
+            #Se deshabilitan los combobox numero de inscripcion y el combobox del id alumno, tambien se deshabilitan los demas botones excepto cancelar y guardar
             self.num_Inscripcion.config(state="disabled")
             self.cmbx_Id_Alumno.config(state="disabled")
             self.btnEditar.config(state="disabled")
             self.btnBuscar.config(state="disabled")
             self.btnEliminar.config(state="disabled")
-        else: 
+        else:
+            #Ocurre al presionar el boton editar sin haber seleccionado un curso del treeview
             messagebox.showinfo(title="Error", message="Debe seleccionar un curso a editar")
 
     def eliminar_opciones(self, _=''):
